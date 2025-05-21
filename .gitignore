@@ -1,0 +1,40 @@
+# --- Compiled object files ---
+*.o
+*.obj
+
+# --- Compiled static libraries ---
+*.lib
+*.a
+
+# --- Compiled dynamic libraries ---
+*.dll
+*.so
+*.dylib
+
+# --- Executables ---
+*.exe
+*.out
+*.app
+
+# --- Build directories ---
+/build/
+/CMakeFiles/
+/cmake-build-*/
+
+# --- CMake generated files ---
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# --- IDEs and Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.user
+*.code-workspace
+
+# --- OS-specific files ---
+.DS_Store
+Thumbs.db
