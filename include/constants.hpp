@@ -14,18 +14,20 @@ namespace constants
     const int BLACK = -1;
 
     const int WHITE_PAWN = 7;
-    const int WHITE_HORSE = 8;
+    const int WHITE_KNIGHT = 8;
     const int WHITE_BISHOP = 9;
     const int WHITE_ROOK = 10;
     const int WHITE_KING = 11;
     const int WHITE_QUEEN = 12;
 
     const int BLACK_PAWN = 13;
-    const int BLACK_HORSE = 14;
+    const int BLACK_KNIGHT = 14;
     const int BLACK_BISHOP = 15;
     const int BLACK_ROOK = 16;
     const int BLACK_KING = 17;
     const int BLACK_QUEEN = 18;
+
+    const int EMPTY = 0;
 }
 
 #endif

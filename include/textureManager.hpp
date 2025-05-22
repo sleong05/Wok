@@ -1,15 +1,16 @@
-#ifndef TEXTUREMANAGER_CPP
-#define TEXTUREMANAGER_CPP
+#ifndef TEXTUREMANAGER_HPP
+#define TEXTUREMANAGER_HPP
 #include <SFML/Graphics.hpp>
 
 class TextureManager
 {
 public:
-    sf::Texture getTexture(int piece);
-    void loadTextures();
+    static sf::Texture &getTexture(int piece);
+    static void loadTextures();
 
 private:
-    std::map<std::string, sf::Texture> pieceTextures;
-}
+    static std::map<std::string, sf::Texture> pieceTextures;
+    static std::vector<std::string> pieceNames;
+};
 
 #endif

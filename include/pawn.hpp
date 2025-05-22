@@ -1,12 +1,9 @@
-#include "piece.hpp"
-#include <SFML/Graphics.hpp>
-
-class Pawn : public Piece
+#include <pseudoMove.hpp>
+#include <identifier.hpp>
+#include <constants.hpp>
+#include <vector>
+class Pawn
 {
 public:
-    Pawn(int x, int y, int color);
-    void draw(sf::RenderWindow &window) override;
-
-private:
-    sf::Texture texture;
+    std::vector<PseudoMove> inline getPsuedoMoves(int col, int row, int color);
 };
