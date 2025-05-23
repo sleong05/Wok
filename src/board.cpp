@@ -2,6 +2,7 @@
 #include "identifier.hpp"
 #include "board.hpp"
 #include "constants.hpp"
+#include "moveGetter.hpp"
 
 using namespace constants;
 

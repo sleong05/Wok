@@ -2,8 +2,9 @@
 #include <identifier.hpp>
 #include <constants.hpp>
 #include <vector>
+#include "board.hpp"
 class Pawn
 {
 public:
-    std::vector<PseudoMove> inline getPsuedoMoves(int col, int row, int color);
+    static std::vector<PseudoMove> getPseudoMoves(int col, int row, int color, Board &board);
 };

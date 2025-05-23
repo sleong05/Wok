@@ -10,8 +10,8 @@ namespace constants
     const float WINDOW_WIDTH = 800.f;
     const sf::Color creamTileColor(238, 238, 210);
     const sf::Color greenTileColor(118, 150, 86);
-    const int WHITE = 1;
-    const int BLACK = -1;
+    const int WHITE = -1;
+    const int BLACK = 1;
 
     const int WHITE_PAWN = 7;
     const int WHITE_KNIGHT = 8;

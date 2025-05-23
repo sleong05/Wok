@@ -43,7 +43,7 @@ void BoardDrawer::loadSprites()
     }
 }
 
-void BoardDrawer::drawBoard(sf::RenderWindow &window, const Board &board)
+void BoardDrawer::drawBoard(sf::RenderWindow &window)
 {
     // draw background
     int offset = 0;
@@ -57,7 +57,10 @@ void BoardDrawer::drawBoard(sf::RenderWindow &window, const Board &board)
         }
         offset = offset ? 0 : 1;
     }
-    // draw pieces
+}
+
+void BoardDrawer::drawPieces(const Board &board, sf::RenderWindow &window)
+{
     auto squares = board.getSquares();
 
     for (int row = 0; row < 8; row++)

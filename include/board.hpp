@@ -5,10 +5,13 @@
 #include <array>
 #include <SFML/Graphics.hpp>
 #include "legalMove.hpp"
+#include "pseudoMove.hpp"
 
 class Board
 {
 public:
+    void doMove(PseudoMove move);
+    void undoMove(PseudoMove move);
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
     void doMove(LegalMove move);

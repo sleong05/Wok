@@ -8,7 +8,9 @@ class BoardDrawer
 
 public:
     BoardDrawer();
-    void drawBoard(sf::RenderWindow &window, const Board &board);
+    void drawBoard(sf::RenderWindow &window);
+
+    void drawPieces(const Board &board, sf::RenderWindow &window);
 
 private:
     void loadSprites();

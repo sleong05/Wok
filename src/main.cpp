@@ -4,12 +4,14 @@
 #include "board.hpp"
 #include "textureManager.hpp"
 #include "boardDrawer.hpp"
+#include "boardInteractor.hpp"
 int main()
 {
     std::pair<int, int> selectedPieceLocation;
     TextureManager::loadTextures();
 
     Board board = Board();
+    BoardInteractor boardInteractor = BoardInteractor();
     BoardDrawer boardDrawer = BoardDrawer();
 
     sf::RenderWindow window(sf::VideoMode(constants::WINDOW_WIDTH, constants::WINDOW_HEIGHT), "Wok");
@@ -30,9 +32,8 @@ int main()
                 {
                     int x = event.mouseButton.x / constants::TILE_SIZE;
                     int y = event.mouseButton.y / constants::TILE_SIZE;
-
-                    const auto squares = board.getSquares();
-                    std::cout << squares[y][x] << '\n';
+                    ;
+                    boardInteractor.click(x, y, board);
                 }
                 break;
 
@@ -40,10 +41,12 @@ int main()
                 break;
             }
         }
-        window.clear(constants::greenTileColor);
 
+        window.clear(constants::greenTileColor);
+        boardDrawer.drawBoard(window);
+        boardInteractor.drawInteractionInfo(window);
+        boardDrawer.drawPieces(board, window);
         // draw pieces and board
-        boardDrawer.drawBoard(window, board);
         window.display();
     }
     return 0;

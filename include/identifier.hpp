@@ -1,4 +1,4 @@
-#ifndef IDENTIFER_HPP
+#ifndef IDENTIFIER_HPP
 #define IDENTIFIER_HPP
 
 #include "constants.hpp"
@@ -6,7 +6,7 @@
 class Identifier
 {
 public:
-    int static inline getTeam(int piece);
+    int static getTeam(int piece);
 };
 
 #endif
