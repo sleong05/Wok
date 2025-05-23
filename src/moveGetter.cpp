@@ -1,12 +1,9 @@
 #include "moveGetter.hpp"
 #include "constants.hpp"
-#include "knight.hpp"
 #include <board.hpp>
 #include <iostream>
-#include "pawn.hpp"
-#include "bishop.hpp"
-
-std::vector<PseudoMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &board)
+#include "allPieces.hpp"
+std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &board)
 {
     std::cout << "Getting Moves" << std::endl;
     auto boardState = board.getSquares();
@@ -16,55 +13,73 @@ std::vector<PseudoMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board 
     {
     case constants::WHITE_PAWN:
     {
-        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::WHITE, board);
+        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::WHITE_PAWN, board);
         return pseudoMoves;
     }
     case constants::WHITE_KNIGHT:
     {
-        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::WHITE, boardState);
+        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::WHITE_KNIGHT, boardState);
         return pseudoMoves;
     }
     case constants::WHITE_BISHOP:
     {
-        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::WHITE, boardState);
+        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::WHITE_BISHOP, boardState);
         return pseudoMoves;
     }
     case constants::WHITE_ROOK:
-        // Handle white rook
+    {
+        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::WHITE_ROOK, boardState);
+        return pseudoMoves;
+    }
     case constants::WHITE_QUEEN:
-        // Handle white queen
+    {
+        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::WHITE_QUEEN, boardState);
+        return pseudoMoves;
+    }
     case constants::WHITE_KING:
-        // Handle white king
+    {
+        auto pseudoMoves = King::getPseudoMoves(col, row, constants::WHITE_KING, board);
+        return pseudoMoves;
+    }
 
     case constants::BLACK_PAWN:
     {
-        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::BLACK, board);
+        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::BLACK_PAWN, board);
         return pseudoMoves;
     }
     case constants::BLACK_KNIGHT:
     {
-        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::BLACK, boardState);
+        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::BLACK_KNIGHT, boardState);
         return pseudoMoves;
     }
     case constants::BLACK_BISHOP:
     {
-        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::BLACK, boardState);
+        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::BLACK_BISHOP, boardState);
         return pseudoMoves;
     }
-        // Handle black bishop
     case constants::BLACK_ROOK:
-        // Handle black rook
+    {
+        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::BLACK_ROOK, boardState);
+        return pseudoMoves;
+    }
     case constants::BLACK_QUEEN:
-        // Handle black queen
+    {
+        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::BLACK_QUEEN, boardState);
+        return pseudoMoves;
+    }
     case constants::BLACK_KING:
-        // Handle black king
+    {
+        auto pseudoMoves = King::getPseudoMoves(col, row, constants::BLACK_KING, board);
+        return pseudoMoves;
+    }
 
     default:
+        std::cout << "default case return empty";
         return {};
     }
 }
 
-std::vector<PseudoMove> MoveGetter::getMovesForTeam(int color)
+std::vector<LegalMove> MoveGetter::getMovesForTeam(int color)
 {
-    return std::vector<PseudoMove>();
+    return std::vector<LegalMove>();
 }

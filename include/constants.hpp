@@ -2,6 +2,7 @@
 #define CONSTANTS_HPP
 
 #include <SFML/Graphics.hpp>
+#include <tuple>
 
 namespace constants
 {
@@ -28,6 +29,8 @@ namespace constants
     const int BLACK_QUEEN = 18;
 
     const int EMPTY = 0;
+
+    inline const std::tuple<int, int> NO_TILE_SELECTED = {-1, -1};
 }
 
 #endif

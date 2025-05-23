@@ -31,25 +31,37 @@ const std::array<std::array<int, 8>, 8> &Board::getSquares() const
     return squares;
 }
 
-void Board::doMove(LegalMove move)
+void Board::doMove(LegalMove &move)
 {
+    std::cout << "DOING MOVE: " << move;
     auto [oldX, oldY] = move.from;
     auto [newX, newY] = move.to;
-
+    std::cout << "Move from (" << oldX << ", " << oldY << ") to (" << newX << ", " << newY << ")\n";
     // update tracked positions
     if (Identifier::getTeam(move.pieceToMove) == WHITE)
     {
-        blackPositions.erase(std::find(blackPositions.begin(), blackPositions.end(), move.to));   // remove captures piece from known positions
-        whitePositions.erase(std::find(blackPositions.begin(), blackPositions.end(), move.from)); // removes old position from known pieces
-        whitePositions.push_back(move.to);                                                        // adds new position to know positions
+        // Remove captured piece
+        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.to), blackPositions.end());
+
+        // Update white piece position
+        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.from), whitePositions.end());
+        whitePositions.push_back(move.to);
     }
     else
     {
-        whitePositions.erase(std::find(blackPositions.begin(), blackPositions.end(), move.to));   // remove captures piece from known positions
-        blackPositions.erase(std::find(blackPositions.begin(), blackPositions.end(), move.from)); // removes old position from known pieces
+        // Remove captured piece
+        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.to), whitePositions.end());
+
+        // Update black piece position
+        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.from), blackPositions.end());
         blackPositions.push_back(move.to);
     }
     // move piece
-    squares[oldX][oldY] = constants::EMPTY;
-    squares[newX][newY] = move.pieceToMove;
+    std::cout << "Doing actual move";
+    squares[oldY][oldX] = constants::EMPTY;
+    squares[newY][newX] = move.pieceToMove;
+}
+
+void Board::undoMove(LegalMove &move)
+{
 }

@@ -1,17 +1,18 @@
-#include "bishop.hpp"
+#include "pieces/rook.hpp"
+#include <vector>
 #include "constants.hpp"
-#include <array>
 #include "identifier.hpp"
-std::vector<PseudoMove> Bishop::getPseudoMoves(int col, int row, int color, std::array<std::array<int, 8U>, 8U> boardState)
+#include <array>
+
+std::vector<LegalMove> Rook::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState)
 {
-    std::vector<PseudoMove> moves;
-    int piece = (color == constants::WHITE) ? constants::WHITE_BISHOP : constants::BLACK_BISHOP;
+    std::vector<LegalMove> moves;
+    int color = Identifier::getTeam(piece);
     const std::vector<std::pair<int, int>> directions = {
-        {-1, -1}, // up-left
-        {1, -1},  // up-right
-        {-1, 1},  // down-left
-        {1, 1}    // down-right
-    };
+        {0, -1},
+        {-1, 0},
+        {0, 1},
+        {1, 0}};
     auto from = std::make_tuple(col, row);
 
     for (auto [dCol, dRow] : directions)
@@ -29,11 +30,11 @@ std::vector<PseudoMove> Bishop::getPseudoMoves(int col, int row, int color, std:
                 }
                 else
                 {
-                    moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece); // add other team
+                    moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]); // add other team
                     break;
                 }
             }
-            moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece);
+            moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]);
             tempCol += dCol;
             tempRow += dRow;
         }

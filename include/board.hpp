@@ -5,16 +5,15 @@
 #include <array>
 #include <SFML/Graphics.hpp>
 #include "legalMove.hpp"
-#include "pseudoMove.hpp"
+#include "legalMove.hpp"
 
 class Board
 {
 public:
-    void doMove(PseudoMove move);
-    void undoMove(PseudoMove move);
+    void doMove(LegalMove &move);
+    void undoMove(LegalMove &move);
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
-    void doMove(LegalMove move);
 
 private:
     std::vector<std::tuple<int, int>> blackPositions;
