@@ -11,8 +11,9 @@ std::vector<LegalMove> King::getPseudoMoves(int col, int row, int piece, Board &
     auto boardState = board.getSquares();
     std::vector<LegalMove> pseudoMoves;
     auto from = std::make_tuple(col, row);
+    auto moveState = board.getMovesArray();
     // castling
-    checkCastling(board, col, row, boardState, color, from, piece, pseudoMoves);
+    checkCastling(board, col, row, moveState, boardState, color, from, piece, pseudoMoves);
     // normal moves
     for (auto &direction : constants::KING_OFFSETS)
     {
@@ -23,14 +24,14 @@ std::vector<LegalMove> King::getPseudoMoves(int col, int row, int piece, Board &
         {
             if (boardState[tempRow][tempCol] == constants::EMPTY or Identifier::getTeam(boardState[tempRow][tempCol]) != color)
             {
-                pseudoMoves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]);
+                pseudoMoves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol], moveState[row][col], moveState[tempRow][tempCol]);
             }
         }
     }
     return pseudoMoves;
 }
 
-void King::checkCastling(Board &board, int col, int row, std::array<std::array<int, 8U>, 8U> &boardState, int color, const std::tuple<int, int> &from, int piece, std::vector<LegalMove> &pseudoMoves)
+void King::checkCastling(Board &board, int col, int row, std::array<std::array<bool, 8U>, 8U> &moveState, std::array<std::array<int, 8U>, 8U> &boardState, int color, const std::tuple<int, int> &from, int piece, std::vector<LegalMove> &pseudoMoves)
 {
     int startingCol = 4;
     int startingRow = (Identifier::getTeam(piece) == constants::WHITE) ? 7 : 0;
@@ -53,9 +54,8 @@ void King::checkCastling(Board &board, int col, int row, std::array<std::array<i
                 }
                 if (castleSpotsSafe)
                 {
-                    LegalMove shortCastle = LegalMove(std::make_tuple(6, startingRow), from, piece, constants::EMPTY);
+                    LegalMove shortCastle = LegalMove(std::make_tuple(6, startingRow), from, piece, constants::EMPTY, moveState[row][col], moveState[startingRow][6]);
                     shortCastle.isCastle = true;
-                    shortCastle.additionalPieceHasMoved = false;
                     pseudoMoves.push_back(shortCastle);
                 }
             }
@@ -77,9 +77,8 @@ void King::checkCastling(Board &board, int col, int row, std::array<std::array<i
                 }
                 if (castleSpotsSafe)
                 {
-                    LegalMove shortCastle = LegalMove(std::make_tuple(2, startingRow), from, piece, constants::EMPTY);
+                    LegalMove shortCastle = LegalMove(std::make_tuple(2, startingRow), from, piece, constants::EMPTY, moveState[row][col], moveState[startingRow][2]);
                     shortCastle.isCastle = true;
-                    shortCastle.additionalPieceHasMoved = false;
                     pseudoMoves.push_back(shortCastle);
                 }
             }

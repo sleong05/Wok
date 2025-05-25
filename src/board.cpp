@@ -6,7 +6,7 @@
 
 using namespace constants;
 
-Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECTED, constants::EMPTY, constants::EMPTY)
+Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECTED, constants::EMPTY, constants::EMPTY, false, false)
 {
     initilizeBoard();
 }
@@ -50,6 +50,11 @@ LegalMove Board::getLastMove()
     return lastMove;
 }
 
+std::array<std::array<bool, 8>, 8> Board::getMovesArray()
+{
+    return hasMovedArray;
+}
+
 void Board::doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser)
 {
 
@@ -74,25 +79,7 @@ void Board::doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser)
 
     if (move.isCastle)
     {
-        int color = Identifier::getTeam(move.pieceToMove);
-        auto [kingCol, kingRow] = move.to;
-
-        if (kingCol == 2) // long castle
-        {
-            squares[kingRow][3] = squares[kingRow][0];
-            squares[kingRow][0] = constants::EMPTY;
-            hasMovedArray[kingRow][0] = true;
-            removePositionFromColorTracker(color, 0, kingRow);
-            addPositionToColorTracker(color, 3, kingRow);
-        }
-        else if ((kingCol == 6)) // short castle
-        {
-            squares[kingRow][5] = squares[kingRow][7];
-            squares[kingRow][7] = constants::EMPTY;
-            hasMovedArray[kingRow][7] = true;
-            removePositionFromColorTracker(color, 7, kingRow);
-            addPositionToColorTracker(color, 5, kingRow);
-        }
+        castle(move);
     }
     // update tracked info
     lastMove = move;
@@ -119,6 +106,100 @@ void Board::doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser)
             std::cout << val << " ";
         }
         std::cout << "\n";
+    }
+}
+
+void Board::undoMove(LegalMove &move)
+{
+    auto [oldCol, oldRow] = move.from;
+    auto [newCol, newRow] = move.to;
+
+    // update known positions
+    if (Identifier::getTeam(move.pieceToMove) == WHITE)
+    {
+        // Remove piece from where it was
+        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.to), whitePositions.end());
+
+        // Add back to where it was
+        whitePositions.push_back(move.from);
+        // add captured piece back
+        if (move.pieceAtEnd != EMPTY)
+        {
+            blackPositions.push_back(move.to);
+        }
+    }
+    else
+    {
+        // Remove piece from where it was
+        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.to), blackPositions.end());
+
+        // Add back to where it was
+        blackPositions.push_back(move.from);
+        // add captured piece back
+        if (move.pieceAtEnd != EMPTY)
+        {
+            whitePositions.push_back(move.to);
+        }
+    }
+    squares[oldRow][oldCol] = move.pieceToMove;
+    squares[newRow][newCol] = move.pieceAtEnd;
+
+    // undo moves on hasmoved array
+    hasMovedArray[oldRow][oldCol] = move.fromHasMoved;
+    hasMovedArray[newRow][newCol] = move.toHasMoved;
+
+    if (move.isEnPassant)
+    {
+        int color = Identifier::getTeam(move.pieceToMove);
+        squares[newRow - color][newCol] = (color == WHITE) ? BLACK_PAWN : WHITE_PAWN;
+
+        addPositionToColorTracker(color * -1, newCol, newRow - color);
+    }
+
+    if (move.isCastle)
+    {
+        int color = Identifier::getTeam(move.pieceToMove);
+        auto [kingCol, kingRow] = move.to;
+
+        if (kingCol == 2) // long castle
+        {
+            squares[kingRow][0] = squares[kingRow][3];
+            squares[kingRow][3] = EMPTY;
+            hasMovedArray[kingRow][0] = false;
+            removePositionFromColorTracker(color, 3, kingRow);
+            addPositionToColorTracker(color, 0, kingRow);
+        }
+        else if ((kingCol == 6)) // short castle
+        {
+            squares[kingRow][7] = squares[kingRow][5];
+            squares[kingRow][5] = EMPTY;
+            hasMovedArray[kingRow][7] = false;
+            removePositionFromColorTracker(color, 5, kingRow);
+            addPositionToColorTracker(color, 7, kingRow);
+        }
+    }
+}
+
+void Board::castle(LegalMove &move)
+{
+    int color = Identifier::getTeam(move.pieceToMove);
+    auto [kingCol, kingRow] = move.to;
+
+    if (kingCol == 2) // long castle
+    {
+        squares[kingRow][3] = squares[kingRow][0];
+        squares[kingRow][0] = constants::EMPTY;
+        hasMovedArray[kingRow][0] = true;
+        removePositionFromColorTracker(color, 0, kingRow);
+        addPositionToColorTracker(color, 3, kingRow);
+    }
+    else if ((kingCol == 6)) // short castle
+    {
+        squares[kingRow][5] = squares[kingRow][7];
+        squares[kingRow][7] = constants::EMPTY;
+        hasMovedArray[kingRow][7] = true;
+        removePositionFromColorTracker(color, 7, kingRow);
+        addPositionToColorTracker(color, 5, kingRow);
     }
 }
 
@@ -178,10 +259,6 @@ void Board::updateKnownPositions(LegalMove &move)
         blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.from), blackPositions.end());
         blackPositions.push_back(move.to);
     }
-}
-
-void Board::undoMove(LegalMove &move)
-{
 }
 
 // TESTING AND GUI STUFF

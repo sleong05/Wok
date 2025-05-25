@@ -38,7 +38,12 @@ int main()
                     board.printPositionTrackerAsBoard();
                 }
                 break;
-
+            case sf::Event::KeyPressed:
+                if (event.key.code == sf::Keyboard::L)
+                {
+                    LegalMove lastMove = board.getLastMove();
+                    board.undoMove(lastMove);
+                }
             default:
                 break;
             }

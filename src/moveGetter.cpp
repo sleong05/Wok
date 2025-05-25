@@ -7,6 +7,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
 {
     auto boardState = board.getSquares();
     int piece = boardState[row][col];
+    auto moveState = board.getMovesArray();
 
     switch (piece)
     {
@@ -17,22 +18,22 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     }
     case constants::WHITE_KNIGHT:
     {
-        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::WHITE_KNIGHT, boardState);
+        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::WHITE_KNIGHT, boardState, moveState);
         return pseudoMoves;
     }
     case constants::WHITE_BISHOP:
     {
-        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::WHITE_BISHOP, boardState);
+        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::WHITE_BISHOP, boardState, moveState);
         return pseudoMoves;
     }
     case constants::WHITE_ROOK:
     {
-        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::WHITE_ROOK, boardState);
+        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::WHITE_ROOK, boardState, moveState);
         return pseudoMoves;
     }
     case constants::WHITE_QUEEN:
     {
-        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::WHITE_QUEEN, boardState);
+        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::WHITE_QUEEN, boardState, moveState);
         return pseudoMoves;
     }
     case constants::WHITE_KING:
@@ -48,22 +49,22 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     }
     case constants::BLACK_KNIGHT:
     {
-        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::BLACK_KNIGHT, boardState);
+        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::BLACK_KNIGHT, boardState, moveState);
         return pseudoMoves;
     }
     case constants::BLACK_BISHOP:
     {
-        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::BLACK_BISHOP, boardState);
+        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::BLACK_BISHOP, boardState, moveState);
         return pseudoMoves;
     }
     case constants::BLACK_ROOK:
     {
-        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::BLACK_ROOK, boardState);
+        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::BLACK_ROOK, boardState, moveState);
         return pseudoMoves;
     }
     case constants::BLACK_QUEEN:
     {
-        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::BLACK_QUEEN, boardState);
+        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::BLACK_QUEEN, boardState, moveState);
         return pseudoMoves;
     }
     case constants::BLACK_KING:

@@ -13,16 +13,17 @@ struct LegalMove
 
     int pieceToMove;
     int pieceAtEnd;
-    bool hasMoved = false;
 
-    bool isEnPassant = false;
     bool isCastle = false;
     bool isPromotion = false;
+    bool isEnPassant = false;
     int promotionPiece = constants::EMPTY;
-    bool additionalPieceHasMoved;
 
-    LegalMove(std::tuple<int, int> to, std::tuple<int, int> from, int pieceToMove, int pieceAtEnd)
-        : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd) {
+    bool fromHasMoved;
+    bool toHasMoved;
+
+    LegalMove(std::tuple<int, int> to, std::tuple<int, int> from, int pieceToMove, int pieceAtEnd, bool fromHasMoved, bool toHasMoved)
+        : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd), fromHasMoved(fromHasMoved), toHasMoved(toHasMoved) {
           };
 };
 

@@ -11,6 +11,7 @@ class Board
 {
 public:
     void doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser = false);
+    void castle(LegalMove &move);
     void handlePromotion(LegalMove &move);
     void removePositionFromColorTracker(int color, int newCol, int newRow);
     void addPositionToColorTracker(int color, int newCol, int newRow);
@@ -23,6 +24,8 @@ public:
     const std::array<std::array<int, 8>, 8> &getSquares() const;
     bool hasMoved(int col, int row);
     LegalMove getLastMove();
+
+    std::array<std::array<bool, 8>, 8> getMovesArray();
 
 private:
     LegalMove lastMove;
