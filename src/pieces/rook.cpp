@@ -8,14 +8,9 @@ std::vector<LegalMove> Rook::getPseudoMoves(int col, int row, int piece, std::ar
 {
     std::vector<LegalMove> moves;
     int color = Identifier::getTeam(piece);
-    const std::vector<std::pair<int, int>> directions = {
-        {0, -1},
-        {-1, 0},
-        {0, 1},
-        {1, 0}};
     auto from = std::make_tuple(col, row);
 
-    for (auto [dCol, dRow] : directions)
+    for (auto [dCol, dRow] : constants::ROOK_OFFSETS)
     {
         int tempCol = col + dCol;
         int tempRow = row + dRow;

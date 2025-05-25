@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <tuple>
+#include "squareAttacker.hpp"
 
 const std::tuple<int, int> EMPTY_TILE = {-1, -1};
 
@@ -22,8 +23,9 @@ BoardInteractor::BoardInteractor()
     circle.setOutlineThickness(6.f);
 }
 
-void BoardInteractor::click(int col, int row, Board &board)
+void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &window)
 {
+    std::cout << "Square " << row << ", " << col << " is attacked: " << squareAttacker::isSquareUnderAttack(col, row, constants::WHITE, board.getSquares()) << std::endl;
     std::tuple<int, int> clickedTile = {col, row};
     std::cout << "clicked on row col" << row << ", " << col << std::endl;
 
@@ -31,7 +33,7 @@ void BoardInteractor::click(int col, int row, Board &board)
     if (it != movesMap.end()) // tile is in movesMap keys
     {
         std::cout << "MOVE SELECTed" << it->second << '\n';
-        board.doMove(it->second);
+        board.doMove(it->second, window, true);
 
         selectedPiece = constants::NO_TILE_SELECTED;
         movesMap.clear();
@@ -54,7 +56,6 @@ void BoardInteractor::click(int col, int row, Board &board)
     square.setFillColor(sf::Color::Yellow);
     for (const LegalMove &move : moves)
     {
-        std::cout << "possible move in loop" << std::endl;
         std::tuple<int, int> position = move.to;
         movesMap.insert_or_assign(position, move);
     }

@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <tuple>
+#include <array>
 
 namespace constants
 {
@@ -13,6 +14,7 @@ namespace constants
     const sf::Color greenTileColor(118, 150, 86);
     const int WHITE = -1;
     const int BLACK = 1;
+    const int PLAYING_PLAYER = constants::WHITE;
 
     const int WHITE_PAWN = 7;
     const int WHITE_KNIGHT = 8;
@@ -29,6 +31,14 @@ namespace constants
     const int BLACK_QUEEN = 18;
 
     const int EMPTY = 0;
+
+    static constexpr std::array<std::pair<int, int>, 8> KING_OFFSETS = {{{-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {0, -1}, {1, 1}, {1, 0}, {1, -1}}};
+
+    constexpr std::array<std::pair<int, int>, 8> KNIGHT_OFFSETS = {{{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}}};
+
+    constexpr std::array<std::pair<int, int>, 4> BISHOP_OFFSETS = {{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}};
+
+    constexpr std::array<std::pair<int, int>, 4> ROOK_OFFSETS = {{{0, -1}, {-1, 0}, {0, 1}, {1, 0}}};
 
     inline const std::tuple<int, int> NO_TILE_SELECTED = {-1, -1};
 }

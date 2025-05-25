@@ -3,6 +3,8 @@
 #include <vector>
 #include <tuple>
 #include <iostream>
+#include <memory>
+#include "constants.hpp"
 
 struct LegalMove
 {
@@ -11,20 +13,21 @@ struct LegalMove
 
     int pieceToMove;
     int pieceAtEnd;
+    bool hasMoved = false;
 
-    bool additionalMoves;
-    std::vector<std::pair<int, std::tuple<int, int>>> additionalPiecesToRemove;
-    std::vector<std::pair<int, std::tuple<int, int>>> additionalPiecesMove;
+    bool isEnPassant = false;
+    bool isCastle = false;
+    bool isPromotion = false;
+    int promotionPiece = constants::EMPTY;
     bool additionalPieceHasMoved;
 
     LegalMove(std::tuple<int, int> to, std::tuple<int, int> from, int pieceToMove, int pieceAtEnd)
-        : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd)
-    {
-        additionalMoves = false;
-    };
+        : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd) {
+          };
 };
 
-inline std::ostream &operator<<(std::ostream &os, const LegalMove &move)
+inline std::ostream &
+operator<<(std::ostream &os, const LegalMove &move)
 {
     auto [toCol, toRow] = move.to;
     auto [fromCol, fromRow] = move.from;

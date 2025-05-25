@@ -5,7 +5,6 @@
 #include "allPieces.hpp"
 std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &board)
 {
-    std::cout << "Getting Moves" << std::endl;
     auto boardState = board.getSquares();
     int piece = boardState[row][col];
 

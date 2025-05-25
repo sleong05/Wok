@@ -7,15 +7,9 @@ std::vector<LegalMove> Bishop::getPseudoMoves(int col, int row, int piece, std::
 {
     std::vector<LegalMove> moves;
     int color = Identifier::getTeam(piece);
-    const std::vector<std::pair<int, int>> directions = {
-        {-1, -1}, // up-left
-        {1, -1},  // up-right
-        {-1, 1},  // down-left
-        {1, 1}    // down-right
-    };
     auto from = std::make_tuple(col, row);
 
-    for (auto [dCol, dRow] : directions)
+    for (auto [dCol, dRow] : constants::BISHOP_OFFSETS)
     {
         int tempCol = col + dCol;
         int tempRow = row + dRow;

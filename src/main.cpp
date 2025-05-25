@@ -33,7 +33,9 @@ int main()
                     int x = event.mouseButton.x / constants::TILE_SIZE;
                     int y = event.mouseButton.y / constants::TILE_SIZE;
                     ;
-                    boardInteractor.click(x, y, board);
+                    boardInteractor.click(x, y, board, window);
+                    board.verifyTrackerConsistency();
+                    board.printPositionTrackerAsBoard();
                 }
                 break;
 

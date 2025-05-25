@@ -3,17 +3,14 @@
 #include "constants.hpp"
 #include <array>
 #include "identifier.hpp"
-
+#include <tuple>
 std::vector<LegalMove> Knight::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState)
 {
     std::tuple<int, int> from = {col, row};
     int color = Identifier::getTeam(piece);
     std::vector<LegalMove> pseudoMoves;
 
-    const std::vector<std::pair<int, int>> offsets = {
-        {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
-
-    for (auto [dc, dr] : offsets)
+    for (auto [dc, dr] : constants::KNIGHT_OFFSETS)
     {
         int newCol = col + dc;
         int newRow = row + dr;

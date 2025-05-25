@@ -9,7 +9,7 @@ class BoardInteractor
 {
 public:
     BoardInteractor();
-    void click(int row, int col, Board &board);
+    void click(int row, int col, Board &board, sf::RenderWindow &window);
     void drawInteractionInfo(sf::RenderWindow &window);
 
 private:
