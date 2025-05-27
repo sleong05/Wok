@@ -1,4 +1,7 @@
 #include "boardInteractor.hpp"
+#include "boardDrawer.hpp"
+#include "chengine/chengine.hpp"
+#include "identifier.hpp"
 #include "constants.hpp"
 #include "board.hpp"
 #include "moveGetter.hpp"
@@ -10,7 +13,7 @@
 
 const std::tuple<int, int> EMPTY_TILE = {-1, -1};
 
-BoardInteractor::BoardInteractor()
+BoardInteractor::BoardInteractor(Board &board, BoardDrawer &boardDrawer) : chengine(board), boardDrawer(boardDrawer)
 {
     square.setSize(sf::Vector2f(constants::TILE_SIZE, constants::TILE_SIZE));
     selectedPiece = {-1, -1}; // no value
@@ -25,19 +28,44 @@ BoardInteractor::BoardInteractor()
 
 void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &window)
 {
-    std::cout << "Square " << row << ", " << col << " is attacked: " << squareAttacker::isSquareUnderAttack(col, row, constants::WHITE, board.getSquares()) << std::endl;
     std::tuple<int, int> clickedTile = {col, row};
-    std::cout << "clicked on row col" << row << ", " << col << std::endl;
 
     auto it = movesMap.find(clickedTile);
+    auto boardState = board.getSquares();
+    auto [selectedCol, selectedRow] = selectedPiece;
     if (it != movesMap.end()) // tile is in movesMap keys
     {
-        std::cout << "MOVE SELECTed" << it->second << '\n';
-        board.doMove(it->second, window, true);
+        if (Identifier::getTeam(boardState[selectedRow][selectedCol]) == playersTurn)
+        {
 
-        selectedPiece = constants::NO_TILE_SELECTED;
-        movesMap.clear();
-        return;
+            sf::RenderWindow *windowPtr = &window;
+            board.doMove(it->second, windowPtr, true);
+
+            playersTurn *= -1;
+            selectedPiece = constants::NO_TILE_SELECTED;
+            movesMap.clear();
+
+            // update screen
+            window.clear(constants::greenTileColor);
+            boardDrawer.drawBoard(window);
+            drawInteractionInfo(window);
+            boardDrawer.drawPieces(board, window);
+            window.display();
+            // do engine Move
+            LegalMove chengineMove = chengine.getMove();
+
+            if (chengineMove.from == constants::NO_TILE_SELECTED)
+            { // game is over
+                std::cout << "GAME OVER" << std::endl;
+                return;
+            }
+            std::cout << "engine move was " << chengineMove << std::endl;
+            board.doMove(chengineMove);
+            chengineMoveSquare = chengineMove.to;
+            playersTurn *= -1;
+
+            return;
+        }
     }
     // click is not on a possible move
     movesMap.clear();
@@ -63,6 +91,13 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
 
 void BoardInteractor::drawInteractionInfo(sf::RenderWindow &window)
 {
+    if (chengineMoveSquare != EMPTY_TILE)
+    {
+        auto [col, row] = chengineMoveSquare;
+        square.setPosition(col * constants::TILE_SIZE, row * constants::TILE_SIZE);
+        square.setFillColor(sf::Color(255, 255, 0, 160));
+        window.draw(square);
+    }
     // draw square on piece
     if (selectedPiece != EMPTY_TILE)
     {

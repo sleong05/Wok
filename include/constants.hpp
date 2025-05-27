@@ -41,6 +41,6 @@ namespace constants
     constexpr std::array<std::pair<int, int>, 4> ROOK_OFFSETS = {{{0, -1}, {-1, 0}, {0, 1}, {1, 0}}};
 
     inline const std::tuple<int, int> NO_TILE_SELECTED = {-1, -1};
-}
+};
 
 #endif

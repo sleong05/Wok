@@ -5,7 +5,6 @@
 #include <iostream>
 #include <memory>
 #include "constants.hpp"
-
 struct LegalMove
 {
     std::tuple<int, int> to;
@@ -22,9 +21,14 @@ struct LegalMove
     bool fromHasMoved;
     bool toHasMoved;
 
+    double value;
+
     LegalMove(std::tuple<int, int> to, std::tuple<int, int> from, int pieceToMove, int pieceAtEnd, bool fromHasMoved, bool toHasMoved)
         : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd), fromHasMoved(fromHasMoved), toHasMoved(toHasMoved) {
           };
+
+    LegalMove() : to(constants::NO_TILE_SELECTED), from(constants::NO_TILE_SELECTED),
+                  pieceToMove(constants::EMPTY), pieceAtEnd(constants::EMPTY), fromHasMoved(false), toHasMoved(false) {};
 };
 
 inline std::ostream &

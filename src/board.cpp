@@ -3,6 +3,7 @@
 #include "board.hpp"
 #include "constants.hpp"
 #include "moveGetter.hpp"
+#include "squareAttacker.hpp"
 
 using namespace constants;
 
@@ -13,6 +14,8 @@ Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECT
 
 void Board::initilizeBoard()
 {
+    whiteKingPosition = {4, 7};
+    blackKingPosition = {4, 0};
     whitePositions = {{7, 7}, {6, 7}, {5, 7}, {4, 7}, {3, 7}, {2, 7}, {1, 7}, {0, 7}, {7, 6}, {6, 6}, {5, 6}, {4, 6}, {3, 6}, {2, 6}, {1, 6}, {0, 6}};
     blackPositions = {{7, 0}, {6, 0}, {5, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0}, {0, 0}, {7, 1}, {6, 1}, {5, 1}, {4, 1}, {3, 1}, {2, 1}, {1, 1}, {0, 1}};
     hasMovedArray = {{{false, false, false, false, false, false, false, false},
@@ -50,12 +53,12 @@ LegalMove Board::getLastMove()
     return lastMove;
 }
 
-std::array<std::array<bool, 8>, 8> Board::getMovesArray()
+const std::array<std::array<bool, 8>, 8> Board::getMovesArray()
 {
     return hasMovedArray;
 }
 
-void Board::doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser)
+void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
 
     auto [oldCol, oldRow] = move.from;
@@ -99,6 +102,17 @@ void Board::doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser)
         handlePromotion(move);
     }
 
+    // update king position
+    if (move.pieceToMove == WHITE_KING)
+    {
+        whiteKingPosition = move.to;
+    }
+    else if (move.pieceToMove == BLACK_KING)
+    {
+        blackKingPosition = move.to;
+    }
+
+    /*
     for (const auto &row : hasMovedArray)
     {
         for (int val : row)
@@ -106,7 +120,7 @@ void Board::doMove(LegalMove &move, sf::RenderWindow &window, bool fromUser)
             std::cout << val << " ";
         }
         std::cout << "\n";
-    }
+    } */
 }
 
 void Board::undoMove(LegalMove &move)
@@ -178,8 +192,31 @@ void Board::undoMove(LegalMove &move)
             addPositionToColorTracker(color, 7, kingRow);
         }
     }
+    if (move.pieceToMove == WHITE_KING)
+    {
+        whiteKingPosition = move.from;
+    }
+    else if (move.pieceToMove == BLACK_KING)
+    {
+        blackKingPosition = move.from;
+    }
 }
 
+bool Board::testMoveCheckLegality(LegalMove &move)
+{
+    LegalMove actualLastMove = lastMove;
+    doMove(move);
+    bool inCheck = isKingInCheck(Identifier::getTeam(move.pieceToMove));
+    undoMove(move);
+    lastMove = actualLastMove;
+    return not inCheck;
+}
+
+bool Board::isKingInCheck(int color)
+{
+    auto [kingCol, kingRow] = (color == WHITE) ? whiteKingPosition : blackKingPosition;
+    return squareAttacker::isSquareUnderAttack(kingCol, kingRow, color, getSquares());
+}
 void Board::castle(LegalMove &move)
 {
     int color = Identifier::getTeam(move.pieceToMove);
@@ -245,7 +282,6 @@ void Board::updateKnownPositions(LegalMove &move)
         blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.to), blackPositions.end());
 
         // Update white piece position
-        std::cout << "removing col" << std::get<0>(move.from) << " row " << std::get<1>(move.from) << std::endl;
         whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.from), whitePositions.end());
         whitePositions.push_back(move.to);
     }
@@ -331,8 +367,14 @@ void Board::printPositionTrackerAsBoard() const
     std::cout << "  -----------------\n";
 }
 
-int Board::showPromotionMenu(sf::RenderWindow &window, int color)
+int Board::showPromotionMenu(sf::RenderWindow *window, int color)
 {
+    if (!window)
+    {
+        std::cerr << "No RenderWindow provided to showPromotionMenu.\n";
+        return (color == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+    }
+
     // Load piece textures
     std::vector<sf::Texture> textures(4);
     std::vector<sf::Sprite> sprites(4);
@@ -363,8 +405,8 @@ int Board::showPromotionMenu(sf::RenderWindow &window, int color)
     }
 
     // Get window dimensions
-    float windowWidth = static_cast<float>(window.getSize().x);
-    float windowHeight = static_cast<float>(window.getSize().y);
+    float windowWidth = static_cast<float>(window->getSize().x);
+    float windowHeight = static_cast<float>(window->getSize().y);
 
     // Centered background box
     sf::Vector2f dialogSize(400.f, 150.f);
@@ -396,7 +438,7 @@ int Board::showPromotionMenu(sf::RenderWindow &window, int color)
     while (true)
     {
         sf::Event event;
-        while (window.pollEvent(event))
+        while (window->pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
             {
@@ -418,13 +460,13 @@ int Board::showPromotionMenu(sf::RenderWindow &window, int color)
             }
         }
 
-        window.clear(); // Optional: only if you want to redraw from scratch
-        // window.draw(board background) — if your board is visible, draw it here
-        window.draw(overlay);
-        window.draw(background);
+        window->clear(); // Optional: only if you want to redraw from scratch
+        // window->draw(board background) — if your board is visible, draw it here
+        window->draw(overlay);
+        window->draw(background);
         for (const auto &sprite : sprites)
-            window.draw(sprite);
-        window.display();
+            window->draw(sprite);
+        window->display();
     }
 
     // Unreachable, fallback just in case

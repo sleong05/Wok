@@ -2,6 +2,7 @@
 #include <identifier.hpp>
 
 using namespace constants;
+// under attack from the opposite color
 bool squareAttacker::isSquareUnderAttack(int col, int row, int color, const std::array<std::array<int, 8>, 8> &boardState)
 {
 
