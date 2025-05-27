@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include <identifier.hpp>
 #include <algorithm>
-
+#include <string>
 using namespace constants;
 
 MinMaxTree::MinMaxTree(Board &board) : board(board)
@@ -18,17 +18,15 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
 {
     int INF = 1000000000.0;
 
-    return lookIntoFutureMoves(color, 0, -INF, INF);
+    return lookIntoFutureMoves(color, 1, -INF, INF);
 };
 
 LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, double beta)
 {
-    auto allMoves = MoveGetter::getMovesForTeam(color, board);
     // -----------------------------------------BASE CASES--------------------------------------------------
     // base case mate/draw
-    if (allMoves.empty())
+    if (not MoveGetter::hasMoveLeft(color, board))
     {
-        std::cout << "Mate spotted!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         int value = board.isKingInCheck(color) ? weights::MATE * color * -1 : weights::DRAW;
         LegalMove dummyMove = LegalMove();
         dummyMove.value = value;
@@ -44,11 +42,13 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
         return dummyMove;
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
+    auto allMoves = MoveGetter::getMovesForTeam(color, board);
     LegalMove bestMove;
     bestMove.value = (color == WHITE) ? -999999999.0 : 999999999.0;
 
     for (auto &move : allMoves)
     {
+        // std::cout << std::string(depth * 4, ' ') << move << std::endl;
         board.doMove(move);
 
         move.value = lookIntoFutureMoves(color * -1, depth + 1, alpha, beta).value;
@@ -65,6 +65,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             alpha = std::max(alpha, move.value);
             if (alpha >= beta)
             {
+                // std::cout << std::string((depth + 1) * 4, ' ') << "PRUNING" << std::endl;
                 break;
             }
         }
@@ -78,6 +79,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             beta = std::min(beta, move.value);
             if (alpha >= beta)
             {
+                // std::cout << std::string((depth + 1) * 4, ' ') << "PRUNING" << std::endl;
                 break;
             }
         }

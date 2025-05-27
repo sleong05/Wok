@@ -199,3 +199,17 @@ std::vector<LegalMove> MoveGetter::getMovesForTeam(int color, Board &board)
     }
     return LegalMoves;
 }
+
+bool MoveGetter::hasMoveLeft(int color, Board &board)
+{
+    auto piecePositions = (color == constants::WHITE) ? board.whitePositions : board.blackPositions;
+
+    for (auto &position : piecePositions)
+    {
+        auto [col, row] = position;
+        std::vector<LegalMove> pieceMoves = getMovesFromPieceAt(col, row, board);
+        if (not pieceMoves.empty())
+            return true;
+    }
+    return false;
+}
