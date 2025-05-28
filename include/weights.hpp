@@ -6,12 +6,12 @@ namespace weights
     constexpr int MATE = 999999;
     constexpr int DRAW = 0;
 
-    constexpr double CASTLE = 1.0;
+    constexpr double KING_SAFE = .4;
     constexpr int MAX_DEPTH = 5;
 
     constexpr double PASSED_PAWN = .4;
     constexpr double CHAIN_VALUE = .15;
-    constexpr double PAWN_INFRONT_OF_KING = .25;
+    constexpr double PAWN_INFRONT_OF_KING = .2;
 
     inline constexpr std::array<std::array<double, 8>, 8> knightValues = {{{0.0, .05, .1, .1, .1, .1, .05, 0.0},
                                                                            {.05, .15, .2, .2, .2, .2, .15, .05},
@@ -21,6 +21,15 @@ namespace weights
                                                                            {.1, .2, .4, .4, .4, .4, .2, .1},
                                                                            {.05, .15, .2, .2, .2, .2, .15, .05},
                                                                            {0.0, .05, .1, .1, .1, .1, .05, 0.0}}};
+
+    inline constexpr std::array<std::array<double, 8>, 8> kingValues = {{{0.0, .0, 1.5, -.2, -.1, -.2, 1.5, 0.0},
+                                                                         {.0, .0, .0, -.2, -.2, -.2, .0, .0},
+                                                                         {.0, .0, .0, .0, .0, .0, .0, .0},
+                                                                         {.0, .0, .0, .0, .0, .0, .0, .0},
+                                                                         {.0, .0, .0, .0, .0, .0, .0, .0},
+                                                                         {.1, .0, .0, .0, .0, .0, .0, .0},
+                                                                         {.0, .0, .0, -.2, -.2, -.2, .0, .0},
+                                                                         {0.0, .0, 1.5, -.2, -.1, -.2, 1.5, 0.0}}};
 
     inline constexpr std::array<std::array<double, 8>, 8> rookValues = {{{0.2, .15, .15, .15, .15, .15, .15, 0.2}, // not used rn
                                                                          {.15, .15, .15, .1, .1, .15, .15, .15},

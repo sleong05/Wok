@@ -70,24 +70,23 @@ double TheoryEvaluator::getQueenValue(int col, int row, const std::array<std::ar
 double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState, const std::array<std::array<bool, 8u>, 8u> &moveState)
 {
     double value = 0;
-
-    // push for castling
-    if (not moveState[row][col] and (col == 2 or col == 6))
-    {
-        value += CASTLE;
-    }
+    // castling
+    value += kingValues[row][col]; // ADJUST FOR MID GAME
 
     // check if king is safe
     int color = Identifier::getTeam(boardState[row][col]);
     int myPawn = (color == constants::WHITE) ? constants::WHITE_PAWN : constants::BLACK_PAWN;
     // checks 2x3 infront of king for pawns and is happy when they exist
-    if (col + color > 7 or col + color < 0)
+    if (row + color > 7 or row + color < 0)
         return value;
     for (int i = -1; i < 2; i++)
     {
-        if (col + i >= 0 and col + i < 8 and (boardState[row + color][col + i] == myPawn or ((row + color * 2 > 7 or row + color * 2 < 0) and boardState[row + color * 2][col + i])))
+        if (col + i != 3 or col + i != 4)
         {
-            value += PAWN_INFRONT_OF_KING;
+            if ((col + i >= 0 and col + i < 8) and (boardState[row + color][col + i] == myPawn or ((row + color * 2 < 7 and row + color * 2 >= 0) and boardState[row + color * 2][col + i] == myPawn)))
+            {
+                value += PAWN_INFRONT_OF_KING;
+            }
         }
     }
     return value;
