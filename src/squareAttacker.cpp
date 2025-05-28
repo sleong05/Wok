@@ -5,7 +5,6 @@ using namespace constants;
 // under attack from the opposite color
 bool squareAttacker::isSquareUnderAttack(int col, int row, int color, const std::array<std::array<int, 8>, 8> &boardState)
 {
-
     bool underAttack = checkKnightAttack(color, col, row, boardState);
     if (underAttack)
         return true;

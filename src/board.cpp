@@ -38,7 +38,7 @@ void Board::initilizeBoard()
         std::array<int, 8>{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}};
 }
 
-inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
+inline bool fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
 {
     for (size_t i = 0; i < vec.size(); ++i)
     {
@@ -46,9 +46,10 @@ inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<
         {
             vec[i] = vec.back();
             vec.pop_back();
-            return;
+            return true;
         }
     }
+    return false;
 }
 
 const std::array<std::array<int, 8>, 8> &Board::getSquares() const
@@ -73,7 +74,10 @@ const std::array<std::array<bool, 8>, 8> &Board::getMovesArray()
 
 void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
-
+    if (move.to == constants::NO_TILE_SELECTED || move.from == constants::NO_TILE_SELECTED)
+    {
+        throw std::runtime_error("Tried to execute an invalid move.");
+    }
     auto [oldCol, oldRow] = move.from;
     auto [newCol, newRow] = move.to;
 
@@ -265,13 +269,11 @@ void Board::handlePromotion(LegalMove &move)
 
 void Board::removePositionFromColorTracker(int color, int newCol, int newRow)
 {
-    if (color == constants::BLACK)
-    {
-        fastRemove(blackPositions, std::make_tuple(newCol, newRow));
-    }
-    else
-    {
-        fastRemove(whitePositions, std::make_tuple(newCol, newRow));
+    auto &positions = (color == constants::WHITE) ? whitePositions : blackPositions;
+    if (!fastRemove(positions, std::make_tuple(newCol, newRow))) {
+        // Position wasn't found - this is unexpected
+        std::cerr << "Warning: Tried to remove non-existent position (" << newCol << "," << newRow << ") for color " << color << std::endl;
+        verifyTrackerConsistency();  // This will help debug the issue
     }
 }
 

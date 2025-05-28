@@ -71,7 +71,7 @@ double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::arr
 {
     double value = 0;
     // castling
-    value += kingValues[row][col]; // ADJUST FOR MID GAME
+    // ADJUST FOR MID GAME
 
     // check if king is safe
     int color = Identifier::getTeam(boardState[row][col]);

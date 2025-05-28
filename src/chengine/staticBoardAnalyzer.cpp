@@ -48,7 +48,7 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const std::array<s
 
     case WHITE_ROOK:
     case BLACK_ROOK:
-        return 5.0 + TheoryEvaluator::getRookValue(col, row, boardState) + hasNotMoved; // we dont want these peices to move unless they arleady have
+        return 5.0 + TheoryEvaluator::getRookValue(col, row, boardState) - hasNotMoved; // we dont want these peices to move unless they arleady have
 
     case WHITE_QUEEN:
     case BLACK_QUEEN:
@@ -56,7 +56,7 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const std::array<s
 
     case WHITE_KING:
     case BLACK_KING:
-        return 0.0 + TheoryEvaluator::getKingValue(col, row, boardState, moveState) + hasNotMoved;
+        return 0.0 + TheoryEvaluator::getKingValue(col, row, boardState, moveState) - hasNotMoved;
 
     default:
         std::cerr << "Invalid piece ID: " << piece << '\n';
