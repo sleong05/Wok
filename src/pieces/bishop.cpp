@@ -3,6 +3,8 @@
 #include <array>
 #include "identifier.hpp"
 #include <vector>
+#include "pieces/rook.hpp"
+
 std::vector<LegalMove> Bishop::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState, std::array<std::array<bool, 8U>, 8U> &moveState)
 {
     std::vector<LegalMove> moves;
@@ -35,4 +37,28 @@ std::vector<LegalMove> Bishop::getPseudoMoves(int col, int row, int piece, std::
     }
 
     return moves;
+}
+
+int Bishop::getNumberOfMoves(int col, int row, const std::array<std::array<int, 8U>, 8U> &boardState)
+{
+    int spotsSeen = 0;
+    for (auto [dCol, dRow] : constants::BISHOP_OFFSETS)
+    {
+        int tempCol = col + dCol;
+        int tempRow = row + dRow;
+
+        while (tempCol >= 0 and tempRow >= 0 and tempCol < 8 and tempRow < 8)
+        {
+            if (boardState[tempRow][tempCol] != constants::EMPTY) // piece found
+            {
+                spotsSeen += 1;
+                break;
+            }
+            spotsSeen += 1;
+            tempCol += dCol;
+            tempRow += dRow;
+        }
+    }
+
+    return spotsSeen;
 }

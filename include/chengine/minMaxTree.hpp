@@ -1,6 +1,7 @@
 #pragma once
 #include "legalMove.hpp"
 #include "board.hpp"
+#include "theoryEvaluator.hpp"
 
 class MinMaxTree
 {

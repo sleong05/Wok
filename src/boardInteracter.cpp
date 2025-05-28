@@ -59,7 +59,7 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
                 std::cout << "GAME OVER" << std::endl;
                 return;
             }
-            std::cout << "engine move was " << chengineMove << std::endl;
+            std::cout << "engine move was " << chengineMove << " = " << chengineMove.value << std::endl;
             board.doMove(chengineMove);
             chengineMoveSquare = chengineMove.to;
             playersTurn *= -1;

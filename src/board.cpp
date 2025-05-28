@@ -38,12 +38,25 @@ void Board::initilizeBoard()
         std::array<int, 8>{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}};
 }
 
+inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
+{
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+        if (vec[i] == target)
+        {
+            vec[i] = vec.back();
+            vec.pop_back();
+            return;
+        }
+    }
+}
+
 const std::array<std::array<int, 8>, 8> &Board::getSquares() const
 {
     return squares;
 }
 
-bool Board::hasMoved(int col, int row)
+bool Board::hasMoved(int col, int row) const
 {
     return hasMovedArray[row][col];
 }
@@ -53,7 +66,7 @@ LegalMove Board::getLastMove()
     return lastMove;
 }
 
-const std::array<std::array<bool, 8>, 8> Board::getMovesArray()
+const std::array<std::array<bool, 8>, 8> &Board::getMovesArray()
 {
     return hasMovedArray;
 }
@@ -132,7 +145,7 @@ void Board::undoMove(LegalMove &move)
     if (Identifier::getTeam(move.pieceToMove) == WHITE)
     {
         // Remove piece from where it was
-        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.to), whitePositions.end());
+        fastRemove(whitePositions, move.to);
 
         // Add back to where it was
         whitePositions.push_back(move.from);
@@ -145,7 +158,7 @@ void Board::undoMove(LegalMove &move)
     else
     {
         // Remove piece from where it was
-        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.to), blackPositions.end());
+        fastRemove(blackPositions, move.to);
 
         // Add back to where it was
         blackPositions.push_back(move.from);
@@ -254,11 +267,11 @@ void Board::removePositionFromColorTracker(int color, int newCol, int newRow)
 {
     if (color == constants::BLACK)
     {
-        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), std::make_tuple(newCol, newRow)), blackPositions.end());
+        fastRemove(blackPositions, std::make_tuple(newCol, newRow));
     }
     else
     {
-        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), std::make_tuple(newCol, newRow)), whitePositions.end());
+        fastRemove(whitePositions, std::make_tuple(newCol, newRow));
     }
 }
 
@@ -279,20 +292,19 @@ void Board::updateKnownPositions(LegalMove &move)
     if (Identifier::getTeam(move.pieceToMove) == WHITE)
     {
         // Remove captured piece
-        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.to), blackPositions.end());
+        fastRemove(blackPositions, move.to);
 
         // Update white piece position
-        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.from), whitePositions.end());
+        fastRemove(whitePositions, move.from);
         whitePositions.push_back(move.to);
     }
     else
     {
         // Remove captured piece
-
-        whitePositions.erase(std::remove(whitePositions.begin(), whitePositions.end(), move.to), whitePositions.end());
+        fastRemove(whitePositions, move.to);
 
         // Update black piece position
-        blackPositions.erase(std::remove(blackPositions.begin(), blackPositions.end(), move.from), blackPositions.end());
+        fastRemove(blackPositions, move.from);
         blackPositions.push_back(move.to);
     }
 }

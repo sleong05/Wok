@@ -8,6 +8,8 @@
 #include <identifier.hpp>
 #include <algorithm>
 #include <string>
+#include <fstream>
+#include <limits>
 using namespace constants;
 
 MinMaxTree::MinMaxTree(Board &board) : board(board)
@@ -16,18 +18,22 @@ MinMaxTree::MinMaxTree(Board &board) : board(board)
 
 LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them alkways look for the lowest value move
 {
-    int INF = 1000000000.0;
+    double INF = 1000000000.0;
+    std::ofstream clearLog("move_evaluations.log", std::ios::trunc);
+    clearLog.close();
 
     return lookIntoFutureMoves(color, 1, -INF, INF);
 };
 
 LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, double beta)
 {
-    // -----------------------------------------BASE CASES--------------------------------------------------
-    // base case mate/draw
+    // std::ofstream logFile("move_evaluations.log", std::ios::app); // logger
+    //    -----------------------------------------BASE CASES--------------------------------------------------
+    //    base case mate/draw
     if (not MoveGetter::hasMoveLeft(color, board))
     {
-        int value = board.isKingInCheck(color) ? weights::MATE * color * -1 : weights::DRAW;
+        double value = board.isKingInCheck(color) ? (weights::MATE * color) - (depth * 100) : weights::DRAW;
+
         LegalMove dummyMove = LegalMove();
         dummyMove.value = value;
         return dummyMove;
@@ -36,7 +42,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // base case depth hit
     if (depth == weights::MAX_DEPTH)
     {
-        int value = SBAnalyzer::evaluateBoard(board);
+        double value = SBAnalyzer::evaluateBoard(board);
         LegalMove dummyMove = LegalMove();
         dummyMove.value = value;
         return dummyMove;
@@ -44,7 +50,8 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
     auto allMoves = MoveGetter::getMovesForTeam(color, board);
     LegalMove bestMove;
-    bestMove.value = (color == WHITE) ? -999999999.0 : 999999999.0;
+    double INF = std::numeric_limits<double>::infinity();
+    bestMove.value = (color == WHITE) ? -INF : INF;
 
     for (auto &move : allMoves)
     {
@@ -55,6 +62,16 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
 
         board.undoMove(move);
 
+        // --- LOG MOVE & EVALUATION ---
+        /*
+                if (logFile.is_open())
+                {
+                    // indentation for depth
+                    logFile << std::string((depth - 1) * 4, ' ')
+                            << Identifier::getPieceName(move.pieceToMove) << " to " << std::get<0>(move.to) << ", " << std::get<1>(move.to) << " = "
+                            << move.value << std::endl;
+                }
+        */
         // update bestMove
         if (color == WHITE)
         {

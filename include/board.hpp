@@ -27,10 +27,10 @@ public:
     int showPromotionMenu(sf::RenderWindow *window, int color);
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
-    bool hasMoved(int col, int row);
+    bool hasMoved(int col, int row) const;
     LegalMove getLastMove();
 
-    const std::array<std::array<bool, 8>, 8> getMovesArray();
+    const std::array<std::array<bool, 8>, 8> &getMovesArray();
 
 private:
     std::tuple<int, int> whiteKingPosition;

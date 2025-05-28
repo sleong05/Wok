@@ -1,9 +1,34 @@
 #pragma once
+#include <array>
 
 namespace weights
 {
-    const int MATE = 999999;
-    const int DRAW = 0;
+    constexpr int MATE = 999999;
+    constexpr int DRAW = 0;
 
-    const int MAX_DEPTH = 5;
+    constexpr double CASTLE = 1.0;
+    constexpr int MAX_DEPTH = 5;
+
+    constexpr double PASSED_PAWN = .4;
+    constexpr double CHAIN_VALUE = .15;
+    constexpr double PAWN_INFRONT_OF_KING = .25;
+
+    inline constexpr std::array<std::array<double, 8>, 8> knightValues = {{{0.0, .05, .1, .1, .1, .1, .05, 0.0},
+                                                                           {.05, .15, .2, .2, .2, .2, .15, .05},
+                                                                           {.1, .2, .4, .4, .4, .4, .2, .1},
+                                                                           {.15, .2, .4, .5, .5, .4, .2, .15},
+                                                                           {.15, .2, .4, .5, .5, .4, .2, .15},
+                                                                           {.1, .2, .4, .4, .4, .4, .2, .1},
+                                                                           {.05, .15, .2, .2, .2, .2, .15, .05},
+                                                                           {0.0, .05, .1, .1, .1, .1, .05, 0.0}}};
+
+    inline constexpr std::array<std::array<double, 8>, 8> rookValues = {{{0.2, .15, .15, .15, .15, .15, .15, 0.2}, // not used rn
+                                                                         {.15, .15, .15, .1, .1, .15, .15, .15},
+                                                                         {0.0, .05, .05, .05, .05, .05, .05, 0.0},
+                                                                         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                                                                         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                                                                         {0.0, .05, .05, .05, .05, .05, .05, 0.0},
+                                                                         {.15, .15, .15, .1, .1, .15, .15, .15},
+                                                                         {0.2, .15, .15, .15, .15, .15, .15, 0.2}}};
+
 }

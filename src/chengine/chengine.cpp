@@ -29,6 +29,6 @@ LegalMove Chengine::getRandomMove()
     return possibleMoves[randomNumber];
 }
 
-Chengine::Chengine(Board &board) : board(board), miniMax(board)
+Chengine::Chengine(Board &board) : miniMax(board), board(board)
 {
 }
