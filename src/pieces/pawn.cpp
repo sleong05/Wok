@@ -12,7 +12,6 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
     std::vector<LegalMove> moves;
 
     auto boardState = board.getSquares();
-    auto moveState = board.getMovesArray();
     auto from = std::make_tuple(col, row);
     int promotionRow = (color == constants::WHITE) ? 0 : 7;
 
@@ -29,7 +28,7 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
 
             if (std::abs(newRow - oldRow) == 2 and newRow == row and (newCol - 1 == col or newCol + 1 == col)) // last move was a pawn move that moved 2 and pawn is in position
             {
-                LegalMove enPassant = LegalMove(std::make_tuple(newCol, newRow + color), from, piece, boardState[newRow + color][newCol], moveState[row][col], moveState[newRow + color][newCol]);
+                LegalMove enPassant = LegalMove(std::make_tuple(newCol, newRow + color), from, piece, boardState[newRow + color][newCol]);
                 enPassant.isEnPassant = true;
                 moves.push_back(enPassant);
             }
@@ -40,19 +39,19 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
     {
         if (row + color == promotionRow)
         {
-            LegalMove promotion = LegalMove(std::make_tuple(col, row + color), from, piece, boardState[row + color][col], moveState[row][col], moveState[row + color][col]);
+            LegalMove promotion = LegalMove(std::make_tuple(col, row + color), from, piece, boardState[row + color][col]);
             promotion.isPromotion = true;
             moves.push_back(promotion);
         }
         else
         {
-            moves.emplace_back(std::make_tuple(col, row + color), from, piece, boardState[row + color][col], moveState[row][col], moveState[row + color][col]); // foward
+            moves.emplace_back(std::make_tuple(col, row + color), from, piece, boardState[row + color][col]); // foward
         }
 
         int startingRow = (color == constants::WHITE) ? 6 : 1;
         if (boardState[row + color * 2][col] == constants::EMPTY and row == startingRow)
         {
-            moves.emplace_back(std::make_tuple(col, row + color * 2), from, piece, boardState[row + color * 2][col], moveState[row][col], moveState[row + color * 2][col]); // jump foward
+            moves.emplace_back(std::make_tuple(col, row + color * 2), from, piece, boardState[row + color * 2][col]); // jump foward
         }
     }
 
@@ -61,26 +60,26 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
     {
         if (row + color == promotionRow)
         {
-            LegalMove promotion = LegalMove(std::make_tuple(col + 1, row + color), from, piece, boardState[row + color][col + 1], moveState[row][col], moveState[row + color][col + 1]);
+            LegalMove promotion = LegalMove(std::make_tuple(col + 1, row + color), from, piece, boardState[row + color][col + 1]);
             promotion.isPromotion = true;
             moves.push_back(promotion);
         }
         else
         {
-            moves.emplace_back(std::make_tuple(col + 1, row + color), from, piece, boardState[row + color][col + 1], moveState[row][col], moveState[row + color][col + 1]); // attack right
+            moves.emplace_back(std::make_tuple(col + 1, row + color), from, piece, boardState[row + color][col + 1]); // attack right
         }
     }
     if (col - 1 >= 0 and boardState[row + color][col - 1] != constants::EMPTY and Identifier::getTeam(boardState[row + color][col - 1]) != color)
     {
         if (row + color == promotionRow)
         {
-            LegalMove promotion = LegalMove(std::make_tuple(col - 1, row + color), from, piece, boardState[row + color][col - 1], moveState[row][col], moveState[row + color][col - 1]);
+            LegalMove promotion = LegalMove(std::make_tuple(col - 1, row + color), from, piece, boardState[row + color][col - 1]);
             promotion.isPromotion = true;
             moves.push_back(promotion);
         }
         else
         {
-            moves.emplace_back(std::make_tuple(col - 1, row + color), from, piece, boardState[row + color][col - 1], moveState[row][col], moveState[row + color][col + 1]); // attack left
+            moves.emplace_back(std::make_tuple(col - 1, row + color), from, piece, boardState[row + color][col - 1]); // attack left
         }
     }
     return moves;

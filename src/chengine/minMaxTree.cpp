@@ -10,7 +10,17 @@
 #include <string>
 #include <fstream>
 #include <limits>
+#include <chrono>
 using namespace constants;
+
+static int leafCount = 0;
+static int pruneCount1 = 0;
+static int pruneCount2 = 0;
+static int pruneCount3 = 0;
+static int pruneCount4 = 0;
+static int pruneCount5 = 0;
+static int totalNodesVisited = 0;
+static std::vector<int> movesLookedAtBeforePrune;
 
 MinMaxTree::MinMaxTree(Board &board) : board(board)
 {
@@ -19,17 +29,40 @@ MinMaxTree::MinMaxTree(Board &board) : board(board)
 LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them alkways look for the lowest value move
 {
     double INF = 1000000000.0;
-    std::ofstream clearLog("move_evaluations.log", std::ios::trunc);
-    clearLog.close();
+    // std::ofstream clearLog("move_evaluations.log", std::ios::trunc);
+    // clearLog.close();
+    auto start = std::chrono::high_resolution_clock::now();
 
-    return lookIntoFutureMoves(color, 1, -INF, INF);
+    LegalMove bestMove = lookIntoFutureMoves(color, 1, -INF, INF);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "-------------------------------------------- \n";
+    std::cout << "lookIntoFutureMoves took " << duration.count() << " seconds\n";
+
+    std::cout << "Leaf evaluations: " << leafCount << std::endl;
+    std::cout << "Prunes1: " << pruneCount1 << std::endl;
+    std::cout << "Prunes2: " << pruneCount2 << std::endl;
+    std::cout << "Prunes3: " << pruneCount3 << std::endl;
+    std::cout << "Prunes4: " << pruneCount4 << std::endl;
+    std::cout << "Prunes5: " << pruneCount5 << std::endl;
+    std::cout << "Total Nodes Visited(no leafs): " << totalNodesVisited << std::endl;
+
+    double averageMovesBeforePrune = 0.0;
+    for (const auto &numOfMoves : movesLookedAtBeforePrune)
+    {
+        averageMovesBeforePrune += numOfMoves;
+    }
+    std::cout << "Average number of moves before prune: " << averageMovesBeforePrune / movesLookedAtBeforePrune.size() << std::endl;
+
+    return bestMove;
 };
 
 LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, double beta)
 {
     // std::ofstream logFile("move_evaluations.log", std::ios::app); // logger
-    //    -----------------------------------------BASE CASES--------------------------------------------------
-    //    base case mate/draw
+    //      -----------------------------------------BASE CASES--------------------------------------------------
+    //      base case mate/draw
     if (not MoveGetter::hasMoveLeft(color, board))
     {
         double value = board.isKingInCheck(color) ? (weights::MATE * color) - (depth * 100) : weights::DRAW;
@@ -42,6 +75,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // base case depth hit
     if (depth == weights::MAX_DEPTH)
     {
+        leafCount++;
         double value = SBAnalyzer::evaluateBoard(board);
         LegalMove dummyMove = LegalMove();
         dummyMove.value = value;
@@ -49,13 +83,27 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
     auto allMoves = MoveGetter::getMovesForTeam(color, board);
+
+    if (depth <= 5)
+    {
+        for (auto &move : allMoves)
+        {
+            move.computePriority();
+        }
+
+        std::stable_sort(allMoves.begin(), allMoves.end(), [](const LegalMove &a, const LegalMove &b)
+                         { return a.priorityOfSearchValue > b.priorityOfSearchValue; });
+    }
     LegalMove bestMove;
     double INF = std::numeric_limits<double>::infinity();
     bestMove.value = (color == WHITE) ? -INF : INF;
 
+    int numberOfChildrenTraveresed = 0;
     for (auto &move : allMoves)
     {
-        // std::cout << std::string(depth * 4, ' ') << move << std::endl;
+        numberOfChildrenTraveresed++;
+        totalNodesVisited++;
+
         board.doMove(move);
 
         move.value = lookIntoFutureMoves(color * -1, depth + 1, alpha, beta).value;
@@ -64,14 +112,14 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
 
         // --- LOG MOVE & EVALUATION ---
         /*
-                if (logFile.is_open())
-                {
-                    // indentation for depth
-                    logFile << std::string((depth - 1) * 4, ' ')
-                            << Identifier::getPieceName(move.pieceToMove) << " to " << std::get<0>(move.to) << ", " << std::get<1>(move.to) << " = "
-                            << move.value << std::endl;
-                }
-        */
+        if (logFile.is_open())
+        {
+            // indentation for depth
+            logFile << std::string((depth - 1) * 4, ' ')
+                    << Identifier::getPieceName(move.pieceToMove) << " to " << std::get<0>(move.to) << ", " << std::get<1>(move.to) << " = "
+                    << move.value << std::endl;
+        }
+*/
         // update bestMove
         if (color == WHITE)
         {
@@ -79,14 +127,35 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             {
                 bestMove = move;
             }
+
             alpha = std::max(alpha, move.value);
             if (alpha >= beta)
             {
-                // std::cout << std::string((depth + 1) * 4, ' ') << "PRUNING" << std::endl;
+                movesLookedAtBeforePrune.push_back(numberOfChildrenTraveresed);
+                switch (depth)
+                {
+                case 1:
+                    pruneCount1++;
+                    break;
+                case 2:
+                    pruneCount2++;
+                    break;
+                case 3:
+                    pruneCount3++;
+                    break;
+                case 4:
+                    pruneCount4++;
+                    break;
+                case 5:
+                    pruneCount5++;
+                    break;
+                default:
+                    break;
+                }
                 break;
             }
         }
-        if (color == BLACK)
+        else if (color == BLACK)
         {
             if (move.value < bestMove.value)
             {
@@ -94,13 +163,32 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             }
 
             beta = std::min(beta, move.value);
+
             if (alpha >= beta)
             {
-                // std::cout << std::string((depth + 1) * 4, ' ') << "PRUNING" << std::endl;
+                switch (depth)
+                {
+                case 1:
+                    pruneCount1++;
+                    break;
+                case 2:
+                    pruneCount2++;
+                    break;
+                case 3:
+                    pruneCount3++;
+                    break;
+                case 4:
+                    pruneCount4++;
+                    break;
+                case 5:
+                    pruneCount5++;
+                    break;
+                default:
+                    break;
+                }
                 break;
             }
         }
     }
-
     return bestMove;
 }

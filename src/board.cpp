@@ -7,7 +7,7 @@
 
 using namespace constants;
 
-Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECTED, constants::EMPTY, constants::EMPTY, false, false)
+Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECTED, constants::EMPTY, constants::EMPTY)
 {
     initilizeBoard();
 }
@@ -38,7 +38,7 @@ void Board::initilizeBoard()
         std::array<int, 8>{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}};
 }
 
-inline bool fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
+inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
 {
     for (size_t i = 0; i < vec.size(); ++i)
     {
@@ -46,10 +46,9 @@ inline bool fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<
         {
             vec[i] = vec.back();
             vec.pop_back();
-            return true;
+            return;
         }
     }
-    return false;
 }
 
 const std::array<std::array<int, 8>, 8> &Board::getSquares() const
@@ -74,12 +73,12 @@ const std::array<std::array<bool, 8>, 8> &Board::getMovesArray()
 
 void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
-    if (move.to == constants::NO_TILE_SELECTED || move.from == constants::NO_TILE_SELECTED)
-    {
-        throw std::runtime_error("Tried to execute an invalid move.");
-    }
     auto [oldCol, oldRow] = move.from;
     auto [newCol, newRow] = move.to;
+
+    // store hasMove
+    move.fromHasMoved = hasMovedArray[oldRow][oldCol];
+    move.toHasMoved = hasMovedArray[newRow][newCol];
 
     // update tracked positions
     updateKnownPositions(move);
@@ -269,11 +268,13 @@ void Board::handlePromotion(LegalMove &move)
 
 void Board::removePositionFromColorTracker(int color, int newCol, int newRow)
 {
-    auto &positions = (color == constants::WHITE) ? whitePositions : blackPositions;
-    if (!fastRemove(positions, std::make_tuple(newCol, newRow))) {
-        // Position wasn't found - this is unexpected
-        std::cerr << "Warning: Tried to remove non-existent position (" << newCol << "," << newRow << ") for color " << color << std::endl;
-        verifyTrackerConsistency();  // This will help debug the issue
+    if (color == constants::BLACK)
+    {
+        fastRemove(blackPositions, std::make_tuple(newCol, newRow));
+    }
+    else
+    {
+        fastRemove(whitePositions, std::make_tuple(newCol, newRow));
     }
 }
 
@@ -346,25 +347,23 @@ void Board::verifyTrackerConsistency() const
 
 void Board::printPositionTrackerAsBoard() const
 {
-    std::array<std::array<int, 8>, 8> boardView{};
+    std::array<std::array<char, 8>, 8> boardView{};
 
-    // Fill white positions (1)
     for (const auto &pos : whitePositions)
     {
         int col = std::get<0>(pos);
         int row = std::get<1>(pos);
-        boardView[row][col] = 1;
+        boardView[row][col] = 'W';
     }
 
-    // Fill black positions (2)
+    // Fill black positions
     for (const auto &pos : blackPositions)
     {
         int col = std::get<0>(pos);
         int row = std::get<1>(pos);
-        boardView[row][col] = 2;
+        boardView[row][col] = 'B';
     }
 
-    // Print board top to bottom (rank 8 to rank 1)
     std::cout << "\n   a b c d e f g h\n";
     std::cout << "  -----------------\n";
 
@@ -373,7 +372,8 @@ void Board::printPositionTrackerAsBoard() const
         std::cout << row + 1 << "| ";
         for (int col = 0; col < 8; ++col)
         {
-            std::cout << boardView[row][col] << " ";
+            char piece = boardView[row][col];
+            std::cout << (piece ? piece : '.') << " ";
         }
         std::cout << "\n";
     }
@@ -485,4 +485,14 @@ int Board::showPromotionMenu(sf::RenderWindow *window, int color)
 
     // Unreachable, fallback just in case
     return (color == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+}
+
+std::vector<std::tuple<int, int>> Board::getBlackMoves()
+{
+    return blackPositions;
+}
+
+std::vector<std::tuple<int, int>> Board::getWhiteMoves()
+{
+    return whitePositions;
 }

@@ -53,13 +53,12 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
             window.display();
             // do engine Move
             LegalMove chengineMove = chengine.getMove();
-
+            std::cout << "move selected value was " << chengineMove.value << std::endl;
             if (chengineMove.from == constants::NO_TILE_SELECTED)
             { // game is over
                 std::cout << "GAME OVER" << std::endl;
                 return;
             }
-            std::cout << "engine move was " << chengineMove << " = " << chengineMove.value << std::endl;
             board.doMove(chengineMove);
             chengineMoveSquare = chengineMove.to;
             playersTurn *= -1;

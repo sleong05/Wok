@@ -19,7 +19,7 @@ std::vector<LegalMove> Knight::getPseudoMoves(int col, int row, int piece, std::
         {
             if (newRow >= 0 and newRow < 8 and newCol < 8 and newCol >= 0 and (boardState[newRow][newCol] == constants::EMPTY or Identifier::getTeam(boardState[newRow][newCol]) != color))
             {
-                pseudoMoves.emplace_back(std::make_tuple(newCol, newRow), from, piece, boardState[newRow][newCol], moveState[row][col], moveState[newRow][newCol]);
+                pseudoMoves.emplace_back(std::make_tuple(newCol, newRow), from, piece, boardState[newRow][newCol]);
             }
         }
     }

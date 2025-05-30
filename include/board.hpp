@@ -25,6 +25,8 @@ public:
     void verifyTrackerConsistency() const;
     void printPositionTrackerAsBoard() const;
     int showPromotionMenu(sf::RenderWindow *window, int color);
+    std::vector<std::tuple<int, int>> getBlackMoves();
+    std::vector<std::tuple<int, int>> getWhiteMoves();
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
     bool hasMoved(int col, int row) const;

@@ -18,7 +18,7 @@ LegalMove Chengine::getRandomMove()
 {
     auto possibleMoves = MoveGetter::getMovesForTeam(constants::BLACK, board);
     if (possibleMoves.empty())
-        return LegalMove(NO_TILE_SELECTED, NO_TILE_SELECTED, EMPTY, EMPTY, false, false);
+        return LegalMove(NO_TILE_SELECTED, NO_TILE_SELECTED, EMPTY, EMPTY);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dist(0, possibleMoves.size() - 1);

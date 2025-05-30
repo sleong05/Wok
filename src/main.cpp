@@ -39,8 +39,8 @@ int main()
                         int y = event.mouseButton.y / constants::TILE_SIZE;
 
                         boardInteractor.click(x, y, board, window);
-                        board.verifyTrackerConsistency();
-                        board.printPositionTrackerAsBoard();
+                        // board.verifyTrackerConsistency();
+                        // board.printPositionTrackerAsBoard();
                     }
 
                     // check for game end

@@ -26,11 +26,34 @@ struct LegalMove
 
     double value;
 
-    int priorityOfSearchValue;
+    double priorityOfSearchValue = 0;
 
-    LegalMove(std::tuple<int, int> to, std::tuple<int, int> from, int pieceToMove, int pieceAtEnd, bool fromHasMoved, bool toHasMoved)
-        : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd), fromHasMoved(fromHasMoved), toHasMoved(toHasMoved)
+    LegalMove(std::tuple<int, int> to, std::tuple<int, int> from, int pieceToMove, int pieceAtEnd)
+        : to(to), from(from), pieceToMove(pieceToMove), pieceAtEnd(pieceAtEnd) {};
+
+    LegalMove() : to(constants::NO_TILE_SELECTED), from(constants::NO_TILE_SELECTED),
+                  pieceToMove(constants::EMPTY), pieceAtEnd(constants::EMPTY) {};
+
+    inline void computePriority()
     {
+        if (isPromotion)
+        {
+            priorityOfSearchValue += 100;
+        }
+
+        if (pieceAtEnd != constants::EMPTY)
+        {
+            int gain = Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove);
+            priorityOfSearchValue += std::max(gain, 1);
+        }
+        return;
+        /*
+        if (pieceAtEnd != constants::EMPTY)
+        {
+            int gain = Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove);
+            priorityOfSearchValue += std::max(gain, 0);
+        }
+
         auto [aCol, aRow] = to;
         auto [fromCol, fromRow] = from;
         if (aCol == -1 && aRow == -1 && fromCol == -1 && fromRow == -1)
@@ -38,20 +61,19 @@ struct LegalMove
             priorityOfSearchValue = -10000;
             return;
         }
-        int queValue = 0;
 
         // promotion most important
         if (isPromotion)
         {
-            queValue += 1000;
+            priorityOfSearchValue += 1000;
         }
 
         // captures
 
         if (pieceAtEnd != constants::EMPTY)
         {
-
-            queValue += 100 * (Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove));
+            int gain = Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove);
+            priorityOfSearchValue += std::max(gain, 1) * 100; // captures are sitll jsut interesing
         }
 
         //----------------------------------------- normal moves
@@ -63,33 +85,9 @@ struct LegalMove
 
         // order of looking = pawn/king 9-> knight/bishop 7-> rook 5-> queen captures 1
 
-        if ((aCol == 3 or aCol == 4) && (aRow == 3 or aRow == 4))
-        {
-            queValue += 10 * (OrderIngValue);
-        }
-
         // search pawn -> queen
-        queValue += OrderIngValue;
-
-        priorityOfSearchValue = queValue;
-
-        auto [toCol, toRow] = to;
-        std::cout << "legalmove Created: " << "(from=(" << fromCol << ", " << fromRow << "), to=("
-                  << toCol << ", " << toRow << "), pieceToMove=" << pieceToMove
-                  << ", pieceAtEnd=" << pieceAtEnd << ") with value: " << priorityOfSearchValue << "\n";
-    };
-
-    LegalMove() : to(constants::NO_TILE_SELECTED), from(constants::NO_TILE_SELECTED),
-                  pieceToMove(constants::EMPTY), pieceAtEnd(constants::EMPTY), fromHasMoved(false), toHasMoved(false)
-    {
-        // this is for making DummyMoves for mate and drawing so they should be highest priorirty
-        auto [toCol, toRow] = to;
-        auto [fromCol, fromRow] = from;
-        priorityOfSearchValue = 10000;
-        std::cout << "legalmove Created DUMMY VERSION: " << "(from=(" << fromCol << ", " << fromRow << "), to=("
-                  << toCol << ", " << toRow << "), pieceToMove=" << pieceToMove
-                  << ", pieceAtEnd=" << pieceAtEnd << ")  with value: " << priorityOfSearchValue << "\n";
-    };
+        priorityOfSearchValue += OrderIngValue; */
+    }
 };
 
 inline std::ostream &
@@ -98,9 +96,7 @@ operator<<(std::ostream &os, const LegalMove &move)
     auto [toCol, toRow] = move.to;
     auto [fromCol, fromRow] = move.from;
 
-    os << "LegalMove(from=(" << fromCol << ", " << fromRow << "), to=("
-       << toCol << ", " << toRow << "), pieceToMove=" << move.pieceToMove
-       << ", pieceAtEnd=" << move.pieceAtEnd << ")\n";
+    os << "move " << Identifier::getPieceName(move.pieceToMove) << " to " << " " << toCol << ", " << toRow << " " << Identifier::getPieceName(move.pieceAtEnd) << " from " << fromRow << ", " << fromCol << " with value " << move.priorityOfSearchValue << '\n';
     return os;
 }
 

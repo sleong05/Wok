@@ -198,39 +198,29 @@ bool static inline sortingFunction(const LegalMove &a, const LegalMove &b, bool 
 std::vector<LegalMove> MoveGetter::getMovesForTeam(int color, Board &board)
 {
     std::vector<LegalMove> LegalMoves;
-    auto &piecePositions = (color == constants::WHITE) ? board.whitePositions : board.blackPositions;
-    const auto boardState = board.getSquares();
+    auto piecePositions = (color == constants::WHITE) ? board.whitePositions : board.blackPositions;
 
-    // Validate all positions before using them
-    piecePositions.erase(
-        std::remove_if(piecePositions.begin(), piecePositions.end(),
-            [&boardState, color](const auto &pos) {
-                auto [col, row] = pos;
-                return col < 0 || col >= 8 || row < 0 || row >= 8 || 
-                       Identifier::getTeam(boardState[row][col]) != color;
-            }),
-        piecePositions.end()
-    );
+    // bool queenInDanger = false;
 
-    bool queenInDanger = false;
     for (auto &position : piecePositions)
     {
         auto [col, row] = position;
         // get if queen is in danger for optimizzations later
 
+        /*
         if (boardState[row][col] == constants::WHITE_QUEEN or boardState[row][col] == constants::BLACK_QUEEN)
         {
             // std::cout << "checking attack at spot " << row << ", " << col << std::endl;
-            queenInDanger = squareAttacker::isSquareUnderAttack(col, row, color, boardState);
+            // queenInDanger = squareAttacker::isSquareUnderAttack(col, row, color, boardState);
             // std::cout << "finished check\n";
-        }
+        } */
         std::vector<LegalMove> pieceMoves = getMovesFromPieceAt(col, row, board);
 
         LegalMoves.insert(LegalMoves.end(), pieceMoves.begin(), pieceMoves.end());
     }
 
-    std::sort(LegalMoves.begin(), LegalMoves.end(), [&](const LegalMove &a, const LegalMove &b)
-              { return sortingFunction(a, b, queenInDanger); });
+    // std::sort(LegalMoves.begin(), LegalMoves.end(), [&](const LegalMove &a, const LegalMove &b)
+    //{ return sortingFunction(a, b, queenInDanger); });
     return LegalMoves;
 }
 
