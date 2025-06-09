@@ -65,7 +65,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     //      base case mate/draw
     if (not MoveGetter::hasMoveLeft(color, board))
     {
-        double value = board.isKingInCheck(color) ? (weights::MATE * color) - (depth * 100) : weights::DRAW;
+        double value = board.isKingInCheck(color) ? (weights::MATE - (depth * 100)) * color : weights::DRAW;
 
         LegalMove dummyMove = LegalMove();
         dummyMove.value = value;

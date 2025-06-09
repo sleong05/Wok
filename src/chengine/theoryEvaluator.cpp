@@ -11,8 +11,14 @@ double TheoryEvaluator::getPawnValue(int col, int row, const std::array<std::arr
 {
     int color = Identifier::getTeam(boardState[row][col]);
     int myPawn = (color == constants::WHITE) ? constants::WHITE_PAWN : constants::BLACK_PAWN;
+    int distanceFromPromotion = (color == constants::WHITE) ? 7 - row : row;
     double value = 0;
     // check left chain
+    if ((col == 3 or col == 4) and (row == 3 or row == 4))
+    {
+        value += CENTER_PAWN_VALUE;
+    }
+
     if (col != 0)
     {
         if (boardState[row + color][col - 1] == myPawn)
@@ -24,7 +30,10 @@ double TheoryEvaluator::getPawnValue(int col, int row, const std::array<std::arr
             value += CHAIN_VALUE;
     }
 
-    value += passPawnValue(color, row, col, boardState);
+    // encourage pushing of pawns
+    value += DISTANCE_FROM_PROMOTION_VALUE * distanceFromPromotion;
+
+    // value += passPawnValue(color, row, col, boardState);
     return value;
 }
 

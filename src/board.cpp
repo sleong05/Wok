@@ -40,7 +40,7 @@ void Board::initilizeBoard()
 
 inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
 {
-    for (size_t i = 0; i < vec.size(); ++i)
+    for (size_t i = vec.size() - 1; i < vec.size(); --i)
     {
         if (vec[i] == target)
         {
