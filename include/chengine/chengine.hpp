@@ -1,6 +1,6 @@
 #pragma once
 #include "legalMove.hpp"
-#include "Board.hpp"
+#include "board.hpp"
 #include "minMaxTree.hpp"
 class Chengine
 {
