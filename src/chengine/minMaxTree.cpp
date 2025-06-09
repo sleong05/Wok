@@ -14,13 +14,13 @@
 #include <chrono>
 #include <random>
 using namespace constants;
-
 MinMaxTree::MinMaxTree(Board &board) : board(board)
 {
 }
 
 LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them alkways look for the lowest value move
 {
+    transpositionTable.clear();
     double INF = 1000000000.0;
     // std::ofstream clearLog("move_evaluations.log", std::ios::trunc);
     // clearLog.close();
@@ -44,9 +44,9 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
 
 LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, double beta)
 {
-    // std::ofstream logFile("move_evaluations.log", std::ios::app); // logger
+    bool cutoff = false;
+
     //      -----------------------------------------BASE CASES--------------------------------------------------
-    //      base case mate/draw
     if (not MoveGetter::hasMoveLeft(color, board))
     {
         double value = board.isKingInCheck(color) ? (weights::MATE - (depth * 100)) * color : weights::DRAW;
@@ -65,33 +65,30 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
         return dummyMove;
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
+    // transposition table logic
+    double hashValue = 0;
+    uint64_t hash = board.getHash();
+    auto ttIt = transpositionTable.find(hash);
+    if (ttIt != transpositionTable.end() && ttIt->second.depth >= depth)
+    {
+        const TTEntry &entry = ttIt->second;
+
+        if (entry.flag == EXACT)
+        {
+            hashValue = entry.bestMove.value;
+        }
+        if (entry.flag == LOWERBOUND && entry.value >= beta)
+        {
+            hashValue = entry.bestMove.value;
+        }
+        if (entry.flag == UPPERBOUND && entry.value <= alpha)
+        {
+            hashValue = entry.bestMove.value;
+        }
+    }
     // check cache for data
-    std::vector<LegalMove> allMoves;
-    std::vector<CompactMove> compactMoves;
-    bool cached = false;
+    std::vector<LegalMove> allMoves = MoveGetter::getMovesForTeam(color, board);
 
-    auto it = moveCache.find(board.getHash());
-    if (it != moveCache.end())
-    {
-        cached = true;
-        allMoves.reserve(it->second.size());
-
-        for (const auto &cm : it->second)
-        {
-            allMoves.push_back(toLegalMove(cm));
-        }
-    }
-    else
-    {
-        allMoves = MoveGetter::getMovesForTeam(color, board);
-        // cache
-        compactMoves.reserve(allMoves.size());
-
-        for (auto &move : allMoves)
-        {
-            compactMoves.push_back(toCompactMove(move));
-        }
-    }
     if (depth <= 5)
     {
         for (auto &move : allMoves)
@@ -132,6 +129,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             alpha = std::max(alpha, move.value);
             if (alpha >= beta)
             {
+                cutoff = true;
                 break;
             }
         }
@@ -146,11 +144,25 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
 
             if (alpha >= beta)
             {
+                cutoff = true;
                 break;
             }
         }
     }
-    if (not cached)
-        moveCache[board.getHash()] = std::move(compactMoves);
+
+    BoundFlag flag = EXACT;
+    if (bestMove.value <= alpha)
+        flag = UPPERBOUND;
+    else if (bestMove.value >= beta)
+        flag = LOWERBOUND;
+
+    TTEntry entry = {
+        .value = bestMove.value,
+        .depth = depth,
+        .flag = flag,
+        .bestMove = bestMove};
+    transpositionTable[board.getHash()] = entry;
+    if (hashValue != 0)
+        std::cout << "actual move value = " << bestMove.value << " cached best move = " << hashValue << std::endl;
     return bestMove;
 }

@@ -4,6 +4,22 @@
 #include "theoryEvaluator.hpp"
 #include <unordered_map>
 #include "compactMove.hpp"
+
+enum BoundFlag : uint8_t
+{
+    EXACT,
+    LOWERBOUND,
+    UPPERBOUND
+};
+
+struct TTEntry
+{
+    double value;
+    int depth;
+    BoundFlag flag;
+    LegalMove bestMove;
+};
+
 class MinMaxTree
 {
 public:
@@ -12,6 +28,6 @@ public:
     LegalMove lookIntoFutureMoves(int color, int depth, double alpha, double beta);
 
 private:
-    std::unordered_map<uint64_t, std::vector<CompactMove>> moveCache;
+    std::unordered_map<uint64_t, TTEntry> transpositionTable;
     Board &board;
 };
