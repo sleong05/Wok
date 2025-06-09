@@ -4,6 +4,7 @@
 #include "constants.hpp"
 #include "moveGetter.hpp"
 #include "squareAttacker.hpp"
+#include <random>
 
 using namespace constants;
 
@@ -36,6 +37,34 @@ void Board::initilizeBoard()
         std::array<int, 8>{EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
         std::array<int, 8>{WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
         std::array<int, 8>{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}};
+
+    // cache
+    std::uniform_int_distribution<uint64_t> dist;
+    std::mt19937_64 rng(1337);
+    for (int row = 0; row < 8; ++row)
+    {
+        for (int col = 0; col < 8; ++col)
+        {
+            for (int piece = 0; piece < 12; ++piece)
+            {
+                zobrist[row][col][piece] = dist(rng);
+            }
+        }
+    }
+    uint64_t hash = 0;
+    for (int row = 0; row < 8; ++row)
+    {
+        for (int col = 0; col < 8; ++col)
+        {
+            int piece = squares[row][col];
+            if (piece != EMPTY)
+            {
+                hash ^= zobrist[row][col][piece - 7];
+            }
+        }
+    }
+    currentHash = hash;
+    zobristSideToMove = dist(rng);
 }
 
 inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
@@ -56,6 +85,8 @@ const std::array<std::array<int, 8>, 8> &Board::getSquares() const
     return squares;
 }
 
+const uint64_t &Board::getHash() { return currentHash; }
+
 bool Board::hasMoved(int col, int row) const
 {
     return hasMovedArray[row][col];
@@ -73,6 +104,7 @@ const std::array<std::array<bool, 8>, 8> &Board::getMovesArray()
 
 void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
+    currentHash ^= zobristSideToMove;
     auto [oldCol, oldRow] = move.from;
     auto [newCol, newRow] = move.to;
 
@@ -87,12 +119,28 @@ void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
     squares[oldRow][oldCol] = constants::EMPTY;
     squares[newRow][newCol] = move.pieceToMove;
 
+    // update hasing
+    currentHash ^= zobrist[oldRow][oldCol][move.pieceToMove - 7];
+    if (move.pieceAtEnd != constants::EMPTY)
+    {
+        currentHash ^= zobrist[newRow][newCol][move.pieceAtEnd - 7];
+    }
+    currentHash ^= zobrist[newRow][newCol][move.pieceToMove - 7];
+
+    // update tracked info
+    lastMove = move;
+    hasMovedArray[oldRow][oldCol] = true;
+    hasMovedArray[newRow][newCol] = true;
+
     // Do additonal moves for special moves
     if (move.isEnPassant)
     {
         int color = Identifier::getTeam(move.pieceToMove);
+        int capturedPawn = (color == WHITE) ? BLACK_PAWN : WHITE_PAWN;
 
         squares[newRow - color][newCol] = constants::EMPTY;
+        currentHash ^= zobrist[newRow - color][newCol][capturedPawn - 7];
+
         removePositionFromColorTracker(color * -1, newCol, newRow - color);
     }
 
@@ -100,14 +148,10 @@ void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
     {
         castle(move);
     }
-    // update tracked info
-    lastMove = move;
-    hasMovedArray[oldRow][oldCol] = true;
-    hasMovedArray[newRow][newCol] = true;
 
     // promotion logic
-    int promotedRow = (Identifier::getTeam(move.pieceToMove) == WHITE) ? 0 : 7;
-    if ((move.pieceToMove == WHITE_PAWN or move.pieceToMove == BLACK_PAWN) && newRow == promotedRow)
+
+    if (move.isPromotion)
     {
 
         if (fromUser) // only prompt if from gui
@@ -127,16 +171,46 @@ void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
     {
         blackKingPosition = move.to;
     }
+}
 
-    /*
-    for (const auto &row : hasMovedArray)
+void Board::castle(LegalMove &move)
+{
+    int color = Identifier::getTeam(move.pieceToMove);
+    int rook = (color == WHITE) ? WHITE_ROOK : BLACK_ROOK;
+    auto [kingCol, kingRow] = move.to;
+
+    if (kingCol == 2) // long castle
     {
-        for (int val : row)
-        {
-            std::cout << val << " ";
-        }
-        std::cout << "\n";
-    } */
+        squares[kingRow][3] = squares[kingRow][0];
+        squares[kingRow][0] = constants::EMPTY;
+        currentHash ^= zobrist[kingRow][3][rook - 7];
+        currentHash ^= zobrist[kingRow][0][rook - 7];
+        hasMovedArray[kingRow][0] = true;
+        removePositionFromColorTracker(color, 0, kingRow);
+        addPositionToColorTracker(color, 3, kingRow);
+    }
+    else if ((kingCol == 6)) // short castle
+    {
+        squares[kingRow][5] = squares[kingRow][7];
+        squares[kingRow][7] = constants::EMPTY;
+        currentHash ^= zobrist[kingRow][5][rook - 7];
+        currentHash ^= zobrist[kingRow][7][rook - 7];
+        hasMovedArray[kingRow][7] = true;
+        removePositionFromColorTracker(color, 7, kingRow);
+        addPositionToColorTracker(color, 5, kingRow);
+    }
+}
+
+void Board::handlePromotion(LegalMove &move)
+{
+    int color = Identifier::getTeam(move.pieceToMove);
+    auto [col, row] = move.to;
+    if (move.promotionPiece == constants::EMPTY)
+        move.promotionPiece = (color == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+
+    squares[row][col] = move.promotionPiece;
+    currentHash ^= zobrist[row][col][move.pieceToMove - 7];
+    currentHash ^= zobrist[row][col][move.promotionPiece - 7];
 }
 
 void Board::undoMove(LegalMove &move)
@@ -181,20 +255,25 @@ void Board::undoMove(LegalMove &move)
     if (move.isEnPassant)
     {
         int color = Identifier::getTeam(move.pieceToMove);
+        int capturedPawn = (color == WHITE) ? BLACK_PAWN : WHITE_PAWN;
         squares[newRow - color][newCol] = (color == WHITE) ? BLACK_PAWN : WHITE_PAWN;
-
+        currentHash ^= zobrist[newRow - color][newCol][capturedPawn - 7];
         addPositionToColorTracker(color * -1, newCol, newRow - color);
     }
 
     if (move.isCastle)
     {
         int color = Identifier::getTeam(move.pieceToMove);
+        int rook = (color == WHITE) ? WHITE_ROOK : BLACK_ROOK;
         auto [kingCol, kingRow] = move.to;
 
         if (kingCol == 2) // long castle
         {
             squares[kingRow][0] = squares[kingRow][3];
             squares[kingRow][3] = EMPTY;
+            currentHash ^= zobrist[kingRow][0][rook - 7];
+            currentHash ^= zobrist[kingRow][3][rook - 7];
+
             hasMovedArray[kingRow][0] = false;
             removePositionFromColorTracker(color, 3, kingRow);
             addPositionToColorTracker(color, 0, kingRow);
@@ -203,10 +282,19 @@ void Board::undoMove(LegalMove &move)
         {
             squares[kingRow][7] = squares[kingRow][5];
             squares[kingRow][5] = EMPTY;
+            currentHash ^= zobrist[kingRow][7][rook - 7];
+            currentHash ^= zobrist[kingRow][5][rook - 7];
+
             hasMovedArray[kingRow][7] = false;
             removePositionFromColorTracker(color, 5, kingRow);
             addPositionToColorTracker(color, 7, kingRow);
         }
+    }
+
+    if (move.isPromotion)
+    {
+        currentHash ^= zobrist[newRow][newCol][move.promotionPiece - 7];
+        currentHash ^= zobrist[newRow][newCol][move.pieceToMove - 7];
     }
     if (move.pieceToMove == WHITE_KING)
     {
@@ -216,6 +304,17 @@ void Board::undoMove(LegalMove &move)
     {
         blackKingPosition = move.from;
     }
+    // undo zobrist hashiong
+    currentHash ^= zobrist[newRow][newCol][move.pieceToMove - 7];
+
+    if (move.pieceAtEnd != constants::EMPTY)
+    {
+        currentHash ^= zobrist[newRow][newCol][move.pieceAtEnd - 7];
+    }
+
+    currentHash ^= zobrist[oldRow][oldCol][move.pieceToMove - 7];
+
+    currentHash ^= zobristSideToMove;
 }
 
 bool Board::testMoveCheckLegality(LegalMove &move)
@@ -232,38 +331,6 @@ bool Board::isKingInCheck(int color)
 {
     auto [kingCol, kingRow] = (color == WHITE) ? whiteKingPosition : blackKingPosition;
     return squareAttacker::isSquareUnderAttack(kingCol, kingRow, color, getSquares());
-}
-void Board::castle(LegalMove &move)
-{
-    int color = Identifier::getTeam(move.pieceToMove);
-    auto [kingCol, kingRow] = move.to;
-
-    if (kingCol == 2) // long castle
-    {
-        squares[kingRow][3] = squares[kingRow][0];
-        squares[kingRow][0] = constants::EMPTY;
-        hasMovedArray[kingRow][0] = true;
-        removePositionFromColorTracker(color, 0, kingRow);
-        addPositionToColorTracker(color, 3, kingRow);
-    }
-    else if ((kingCol == 6)) // short castle
-    {
-        squares[kingRow][5] = squares[kingRow][7];
-        squares[kingRow][7] = constants::EMPTY;
-        hasMovedArray[kingRow][7] = true;
-        removePositionFromColorTracker(color, 7, kingRow);
-        addPositionToColorTracker(color, 5, kingRow);
-    }
-}
-
-void Board::handlePromotion(LegalMove &move)
-{
-    int color = Identifier::getTeam(move.pieceToMove);
-    auto [col, row] = move.to;
-    if (move.promotionPiece == constants::EMPTY)
-        move.promotionPiece = (color == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
-
-    squares[row][col] = move.promotionPiece;
 }
 
 void Board::removePositionFromColorTracker(int color, int newCol, int newRow)

@@ -1,4 +1,5 @@
 #include "chengine/minMaxTree.hpp"
+#include "chengine/compactMove.hpp"
 #include "chengine/staticBoardAnalyzer.hpp"
 #include "legalMove.hpp"
 #include "board.hpp"
@@ -11,16 +12,8 @@
 #include <fstream>
 #include <limits>
 #include <chrono>
+#include <random>
 using namespace constants;
-
-static int leafCount = 0;
-static int pruneCount1 = 0;
-static int pruneCount2 = 0;
-static int pruneCount3 = 0;
-static int pruneCount4 = 0;
-static int pruneCount5 = 0;
-static int totalNodesVisited = 0;
-static std::vector<int> movesLookedAtBeforePrune;
 
 MinMaxTree::MinMaxTree(Board &board) : board(board)
 {
@@ -46,17 +39,6 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
     std::cout << "-------------------------------------------- \n";
     std::cout << "lookIntoFutureMoves took " << duration.count() << " seconds\n";
 
-    std::cout << "Leaf evaluations: " << leafCount << std::endl;
-    std::cout << "Prunes1: " << pruneCount2 << std::endl;
-    std::cout << "Total Nodes Visited(no leafs): " << totalNodesVisited << std::endl;
-
-    double averageMovesBeforePrune = 0.0;
-    for (const auto &numOfMoves : movesLookedAtBeforePrune)
-    {
-        averageMovesBeforePrune += numOfMoves;
-    }
-    std::cout << "Average number of moves before prune: " << averageMovesBeforePrune / movesLookedAtBeforePrune.size() << std::endl;
-
     return bestMove;
 };
 
@@ -77,15 +59,39 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // base case depth hit
     if (depth == weights::MAX_DEPTH)
     {
-        leafCount++;
         double value = SBAnalyzer::evaluateBoard(board);
         LegalMove dummyMove = LegalMove();
         dummyMove.value = value;
         return dummyMove;
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
-    auto allMoves = MoveGetter::getMovesForTeam(color, board);
+    // check cache for data
+    std::vector<LegalMove> allMoves;
+    std::vector<CompactMove> compactMoves;
+    bool cached = false;
 
+    auto it = moveCache.find(board.getHash());
+    if (it != moveCache.end())
+    {
+        cached = true;
+        allMoves.reserve(it->second.size());
+
+        for (const auto &cm : it->second)
+        {
+            allMoves.push_back(toLegalMove(cm));
+        }
+    }
+    else
+    {
+        allMoves = MoveGetter::getMovesForTeam(color, board);
+        // cache
+        compactMoves.reserve(allMoves.size());
+
+        for (auto &move : allMoves)
+        {
+            compactMoves.push_back(toCompactMove(move));
+        }
+    }
     if (depth <= 5)
     {
         for (auto &move : allMoves)
@@ -100,28 +106,21 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     double INF = std::numeric_limits<double>::infinity();
     bestMove.value = (color == WHITE) ? -INF : INF;
 
-    int numberOfChildrenTraveresed = 0;
     for (auto &move : allMoves)
     {
-        numberOfChildrenTraveresed++;
-        totalNodesVisited++;
-
+        // cache
+        uint64_t hashBefore = board.getHash();
         board.doMove(move);
 
         move.value = lookIntoFutureMoves(color * -1, depth + 1, alpha, beta).value;
 
         board.undoMove(move);
-
-        // --- LOG MOVE & EVALUATION ---
-        /*
-        if (logFile.is_open())
+        uint64_t hashAfter = board.getHash();
+        if (hashBefore != hashAfter)
         {
-            // indentation for depth
-            logFile << std::string((depth - 1) * 4, ' ')
-                    << Identifier::getPieceName(move.pieceToMove) << " to " << std::get<0>(move.to) << ", " << std::get<1>(move.to) << " = "
-                    << move.value << std::endl;
+            std::cerr << "Zobrist hash mismatch after undo!\n";
+            std::abort();
         }
-*/
         // update bestMove
         if (color == WHITE)
         {
@@ -133,27 +132,6 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             alpha = std::max(alpha, move.value);
             if (alpha >= beta)
             {
-                movesLookedAtBeforePrune.push_back(numberOfChildrenTraveresed);
-                switch (depth)
-                {
-                case 1:
-                    pruneCount1++;
-                    break;
-                case 2:
-                    pruneCount2++;
-                    break;
-                case 3:
-                    pruneCount3++;
-                    break;
-                case 4:
-                    pruneCount4++;
-                    break;
-                case 5:
-                    pruneCount5++;
-                    break;
-                default:
-                    break;
-                }
                 break;
             }
         }
@@ -168,29 +146,11 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
 
             if (alpha >= beta)
             {
-                switch (depth)
-                {
-                case 1:
-                    pruneCount1++;
-                    break;
-                case 2:
-                    pruneCount2++;
-                    break;
-                case 3:
-                    pruneCount3++;
-                    break;
-                case 4:
-                    pruneCount4++;
-                    break;
-                case 5:
-                    pruneCount5++;
-                    break;
-                default:
-                    break;
-                }
                 break;
             }
         }
     }
+    if (not cached)
+        moveCache[board.getHash()] = std::move(compactMoves);
     return bestMove;
 }

@@ -34,7 +34,7 @@ struct LegalMove
     LegalMove() : to(constants::NO_TILE_SELECTED), from(constants::NO_TILE_SELECTED),
                   pieceToMove(constants::EMPTY), pieceAtEnd(constants::EMPTY) {};
 
-    inline void computePriority()
+        inline void computePriority()
     {
         if (isPromotion)
         {
@@ -47,46 +47,6 @@ struct LegalMove
             priorityOfSearchValue += std::max(gain, 1);
         }
         return;
-        /*
-        if (pieceAtEnd != constants::EMPTY)
-        {
-            int gain = Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove);
-            priorityOfSearchValue += std::max(gain, 0);
-        }
-
-        auto [aCol, aRow] = to;
-        auto [fromCol, fromRow] = from;
-        if (aCol == -1 && aRow == -1 && fromCol == -1 && fromRow == -1)
-        {
-            priorityOfSearchValue = -10000;
-            return;
-        }
-
-        // promotion most important
-        if (isPromotion)
-        {
-            priorityOfSearchValue += 1000;
-        }
-
-        // captures
-
-        if (pieceAtEnd != constants::EMPTY)
-        {
-            int gain = Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove);
-            priorityOfSearchValue += std::max(gain, 1) * 100; // captures are sitll jsut interesing
-        }
-
-        //----------------------------------------- normal moves
-
-        // check central bonus e4/d4/e5/d5
-
-        int CapturingPieceValue = Identifier::getPieceValue(pieceToMove);
-        int OrderIngValue = 10 - CapturingPieceValue;
-
-        // order of looking = pawn/king 9-> knight/bishop 7-> rook 5-> queen captures 1
-
-        // search pawn -> queen
-        priorityOfSearchValue += OrderIngValue; */
     }
 };
 

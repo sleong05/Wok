@@ -29,12 +29,17 @@ public:
     std::vector<std::tuple<int, int>> getWhiteMoves();
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
+    const uint64_t &getHash();
     bool hasMoved(int col, int row) const;
     LegalMove getLastMove();
 
     const std::array<std::array<bool, 8>, 8> &getMovesArray();
 
 private:
+    uint64_t zobristSideToMove;
+    uint64_t currentHash;
+    uint64_t zobrist[8][8][12];
+
     std::tuple<int, int> whiteKingPosition;
     std::tuple<int, int> blackKingPosition;
     LegalMove lastMove;

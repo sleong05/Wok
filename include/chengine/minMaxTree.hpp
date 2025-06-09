@@ -2,7 +2,8 @@
 #include "legalMove.hpp"
 #include "board.hpp"
 #include "theoryEvaluator.hpp"
-
+#include <unordered_map>
+#include "compactMove.hpp"
 class MinMaxTree
 {
 public:
@@ -11,5 +12,6 @@ public:
     LegalMove lookIntoFutureMoves(int color, int depth, double alpha, double beta);
 
 private:
+    std::unordered_map<uint64_t, std::vector<CompactMove>> moveCache;
     Board &board;
 };
