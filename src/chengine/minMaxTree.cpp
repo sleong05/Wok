@@ -33,6 +33,12 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
     // clearLog.close();
     auto start = std::chrono::high_resolution_clock::now();
 
+    auto blackMoves = MoveGetter::getMovesForTeam(BLACK, board);
+    auto whiteMoves = MoveGetter::getMovesForTeam(WHITE, board);
+
+    int totalMoves = blackMoves.size() + whiteMoves.size();
+    std::cout << "Number of available moves = " << totalMoves << std::endl;
+
     LegalMove bestMove = lookIntoFutureMoves(color, 1, -INF, INF);
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -41,11 +47,7 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
     std::cout << "lookIntoFutureMoves took " << duration.count() << " seconds\n";
 
     std::cout << "Leaf evaluations: " << leafCount << std::endl;
-    std::cout << "Prunes1: " << pruneCount1 << std::endl;
-    std::cout << "Prunes2: " << pruneCount2 << std::endl;
-    std::cout << "Prunes3: " << pruneCount3 << std::endl;
-    std::cout << "Prunes4: " << pruneCount4 << std::endl;
-    std::cout << "Prunes5: " << pruneCount5 << std::endl;
+    std::cout << "Prunes1: " << pruneCount2 << std::endl;
     std::cout << "Total Nodes Visited(no leafs): " << totalNodesVisited << std::endl;
 
     double averageMovesBeforePrune = 0.0;

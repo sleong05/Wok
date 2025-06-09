@@ -21,8 +21,8 @@ struct LegalMove
     bool isEnPassant = false;
     int promotionPiece = constants::EMPTY;
 
-    bool fromHasMoved;
-    bool toHasMoved;
+    bool fromHasMoved = false;
+    bool toHasMoved = false;
 
     double value;
 

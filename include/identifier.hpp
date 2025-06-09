@@ -79,6 +79,7 @@ namespace Identifier
         case constants::BLACK_KING:
             return 1;
         }
+        return constants::EMPTY;
     }
 }
 #endif
