@@ -5,8 +5,12 @@
 #include "moveGetter.hpp"
 #include "squareAttacker.hpp"
 #include <random>
+#include "pieces/king.hpp"
 
 using namespace constants;
+
+
+
 
 Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECTED, constants::EMPTY, constants::EMPTY)
 {
@@ -38,7 +42,7 @@ void Board::initilizeBoard()
         std::array<int, 8>{WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
         std::array<int, 8>{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}};
 
-    // cache
+    // set up hashing
     std::uniform_int_distribution<uint64_t> dist;
     std::mt19937_64 rng(1337);
     for (int row = 0; row < 8; ++row)
@@ -65,6 +69,31 @@ void Board::initilizeBoard()
     }
     currentHash = hash;
     zobristSideToMove = dist(rng);
+    
+    castlingRights = 0b1111; 
+    for (int i = 0; i < 4; ++i) {
+        castlingZobrist[i] = dist(rng);
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        if (castlingRights & (1 << i))
+            currentHash ^= castlingZobrist[i];
+    }
+
+for (int file = 0; file < 8; ++file)
+    enPassantFileZobrist[file] = dist(rng);
+
+if (enPassantFile != -1)
+    currentHash ^= enPassantFileZobrist[enPassantFile];
+
+}
+
+
+void Board::removeCastlingRight(CastlingRight right) {
+    if (castlingRights & right) {
+        currentHash ^= castlingZobrist[__builtin_ctz(right)]; // get index 0–3
+        castlingRights &= ~right; // clear the right
+    }
 }
 
 inline void fastRemove(std::vector<std::tuple<int, int>> &vec, const std::tuple<int, int> &target)
@@ -104,13 +133,57 @@ const std::array<std::array<bool, 8>, 8> &Board::getMovesArray()
 
 void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
+    move.oldEnPassantFile = enPassantFile;
+    move.oldCastlingRights = castlingRights;
+    // en passant hashing
+    if (enPassantFile != -1)
+        currentHash ^= enPassantFileZobrist[enPassantFile];
+    enPassantFile = -1;
+
+    if (move.pieceToMove == WHITE_PAWN && std::get<1>(move.from) == 6 && std::get<1>(move.to) == 4) {
+        enPassantFile = std::get<0>(move.from);
+    } else if (move.pieceToMove == BLACK_PAWN && std::get<1>(move.from) == 1 && std::get<1>(move.to) == 3) {
+        enPassantFile = std::get<0>(move.from);
+    }
+
+    // Add new en passant hash
+    if (enPassantFile != -1)
+        currentHash ^= enPassantFileZobrist[enPassantFile];
+
+
     currentHash ^= zobristSideToMove;
+
     auto [oldCol, oldRow] = move.from;
     auto [newCol, newRow] = move.to;
 
     // store hasMove
     move.fromHasMoved = hasMovedArray[oldRow][oldCol];
     move.toHasMoved = hasMovedArray[newRow][newCol];
+
+    // update castling rights
+    // Castling rights removal (king or rook moved)
+
+    if (move.pieceToMove == WHITE_KING) {
+        removeCastlingRight(WHITE_KINGSIDE);
+        removeCastlingRight(WHITE_QUEENSIDE);
+    }
+    if (move.pieceToMove == BLACK_KING) {
+        removeCastlingRight(BLACK_KINGSIDE);
+        removeCastlingRight(BLACK_QUEENSIDE);
+    }
+    if (move.pieceToMove == WHITE_ROOK) {
+        auto [fromCol, fromRow] = move.from;
+        if (fromCol == 7 && fromRow == 7)
+            removeCastlingRight(WHITE_KINGSIDE);
+        if (fromCol == 0 && fromRow == 7)
+            removeCastlingRight(WHITE_QUEENSIDE);
+    }
+    if (move.pieceToMove == BLACK_ROOK) {
+        if (move.from == std::make_tuple(7, 0))
+            removeCastlingRight(BLACK_KINGSIDE);
+        if (move.from == std::make_tuple(0, 0))
+            removeCastlingRight(BLACK_QUEENSIDE);
+    }
 
     // update tracked positions
     updateKnownPositions(move);
@@ -123,6 +196,19 @@ void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
     currentHash ^= zobrist[oldRow][oldCol][move.pieceToMove - 7];
     if (move.pieceAtEnd != constants::EMPTY)
     {
+    if (move.pieceAtEnd == WHITE_ROOK) {
+        if (move.to == std::make_tuple(7, 7))
+            removeCastlingRight(WHITE_KINGSIDE);
+        if (move.to == std::make_tuple(0, 7))
+            removeCastlingRight(WHITE_QUEENSIDE);
+    }
+    if (move.pieceAtEnd == BLACK_ROOK) {
+        if (move.to == std::make_tuple(7, 0))
+            removeCastlingRight(BLACK_KINGSIDE);
+        if (move.to == std::make_tuple(0, 0))
+            removeCastlingRight(BLACK_QUEENSIDE);
+    }
+
         currentHash ^= zobrist[newRow][newCol][move.pieceAtEnd - 7];
     }
     currentHash ^= zobrist[newRow][newCol][move.pieceToMove - 7];
@@ -171,6 +257,8 @@ void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
     {
         blackKingPosition = move.to;
     }
+
+
 }
 
 void Board::castle(LegalMove &move)
@@ -314,7 +402,33 @@ void Board::undoMove(LegalMove &move)
 
     currentHash ^= zobrist[oldRow][oldCol][move.pieceToMove - 7];
 
+        // Undo en passant hash
+    if (enPassantFile != -1)
+        currentHash ^= enPassantFileZobrist[enPassantFile]; // remove current
+
+    enPassantFile = move.oldEnPassantFile;
+
+    if (enPassantFile != -1)
+        currentHash ^= enPassantFileZobrist[enPassantFile]; // restore old
+
+        
     currentHash ^= zobristSideToMove;
+    // --- Castling rights undo ---
+    if (castlingRights != move.oldCastlingRights) {
+        // Remove current rights from hash
+        for (int i = 0; i < 4; ++i) {
+            if (castlingRights & (1 << i))
+                currentHash ^= castlingZobrist[i];
+        }
+
+        // Add back old rights to hash
+        for (int i = 0; i < 4; ++i) {
+            if (move.oldCastlingRights & (1 << i))
+                currentHash ^= castlingZobrist[i];
+        }
+
+        castlingRights = move.oldCastlingRights;
+    }
 }
 
 bool Board::testMoveCheckLegality(LegalMove &move)

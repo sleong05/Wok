@@ -24,6 +24,11 @@ struct LegalMove
     bool fromHasMoved = false;
     bool toHasMoved = false;
 
+    uint8_t oldCastlingRights = 0;
+    int oldEnPassantFile = -1;
+
+
+
     double value;
 
     double priorityOfSearchValue = 0;

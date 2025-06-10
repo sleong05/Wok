@@ -7,6 +7,13 @@
 class MoveGetter;
 class SBAnalyzer;
 
+enum CastlingRight {
+    WHITE_KINGSIDE  = 1 << 0, // 0001
+    WHITE_QUEENSIDE = 1 << 1, // 0010
+    BLACK_KINGSIDE  = 1 << 2, // 0100
+    BLACK_QUEENSIDE = 1 << 3  // 1000
+};
+
 class Board
 {
     friend class MoveGetter;
@@ -36,9 +43,17 @@ public:
     const std::array<std::array<bool, 8>, 8> &getMovesArray();
 
 private:
+    void removeCastlingRight(CastlingRight right);
     uint64_t zobristSideToMove;
     uint64_t currentHash;
     uint64_t zobrist[8][8][12];
+
+    uint8_t castlingRights;
+    uint64_t castlingZobrist[4];
+
+    uint64_t enPassantFileZobrist[8];
+    int enPassantFile = -1;
+
 
     std::tuple<int, int> whiteKingPosition;
     std::tuple<int, int> blackKingPosition;

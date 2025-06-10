@@ -44,7 +44,8 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
 
 LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, double beta)
 {
-    bool cutoff = false;
+    double originalAlpha = alpha;
+    double originalBeta = beta;
 
     //      -----------------------------------------BASE CASES--------------------------------------------------
     if (not MoveGetter::hasMoveLeft(color, board))
@@ -65,8 +66,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
         return dummyMove;
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
-    // transposition table logic
-    double hashValue = 0;
+    // use transpositon table if already calcualated
     uint64_t hash = board.getHash();
     auto ttIt = transpositionTable.find(hash);
     if (ttIt != transpositionTable.end() && ttIt->second.depth >= depth)
@@ -75,18 +75,18 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
 
         if (entry.flag == EXACT)
         {
-            hashValue = entry.bestMove.value;
+            return entry.bestMove;
         }
         if (entry.flag == LOWERBOUND && entry.value >= beta)
         {
-            hashValue = entry.bestMove.value;
+            return entry.bestMove;
         }
         if (entry.flag == UPPERBOUND && entry.value <= alpha)
         {
-            hashValue = entry.bestMove.value;
+            return entry.bestMove;
         }
     }
-    // check cache for data
+    // generate and evalaute all moves
     std::vector<LegalMove> allMoves = MoveGetter::getMovesForTeam(color, board);
 
     if (depth <= 5)
@@ -129,7 +129,6 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             alpha = std::max(alpha, move.value);
             if (alpha >= beta)
             {
-                cutoff = true;
                 break;
             }
         }
@@ -144,16 +143,15 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
 
             if (alpha >= beta)
             {
-                cutoff = true;
                 break;
             }
         }
     }
-
+    // store result in TT
     BoundFlag flag = EXACT;
-    if (bestMove.value <= alpha)
+    if (bestMove.value <= originalAlpha)
         flag = UPPERBOUND;
-    else if (bestMove.value >= beta)
+    else if (bestMove.value >= originalBeta)
         flag = LOWERBOUND;
 
     TTEntry entry = {
@@ -161,8 +159,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
         .depth = depth,
         .flag = flag,
         .bestMove = bestMove};
-    transpositionTable[board.getHash()] = entry;
-    if (hashValue != 0)
-        std::cout << "actual move value = " << bestMove.value << " cached best move = " << hashValue << std::endl;
+    transpositionTable[hash] = entry;
+
     return bestMove;
 }
