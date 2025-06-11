@@ -7,7 +7,6 @@ namespace weights
     constexpr int DRAW = 0;
 
     constexpr double KING_SAFE = .4;
-    constexpr int MAX_DEPTH = 7;
 
     constexpr double PASSED_PAWN = .4;
     constexpr double CHAIN_VALUE = .1;

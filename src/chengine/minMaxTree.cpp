@@ -18,9 +18,25 @@ MinMaxTree::MinMaxTree(Board &board) : board(board)
 {
 }
 
+static inline double estimateTime(double permutations) {
+    return .005 * pow(permutations/(pow(10, 8)), 3);
+}
+
 LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them alkways look for the lowest value move
 {
-    transpositionTable.clear();
+   currentAge++;
+
+if (transpositionTable.size() > 500000) {
+    int checked = 0;
+    for (auto it = transpositionTable.begin(); it != transpositionTable.end() && checked < 1000; ) {
+        if (currentAge - it->second.age > 8) {
+            it = transpositionTable.erase(it);
+        } else {
+            ++it;
+        }
+        ++checked;
+    }
+}
     double INF = 1000000000.0;
     // std::ofstream clearLog("move_evaluations.log", std::ios::trunc);
     // clearLog.close();
@@ -29,16 +45,25 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
     auto blackMoves = MoveGetter::getMovesForTeam(BLACK, board);
     auto whiteMoves = MoveGetter::getMovesForTeam(WHITE, board);
 
-    int totalMoves = blackMoves.size() + whiteMoves.size();
-    std::cout << "Number of available moves = " << totalMoves << std::endl;
-
+    // std::cout << "Number of black moves = " << blackMoves.size() << std::endl;
+    // std::cout << "Number of white moves = " << whiteMoves.size() << std::endl;
+    double permutations = std::pow(whiteMoves.size(), 3) * std::pow(blackMoves.size(), 3);
+    std::cout << "estimated permutations = " <<  permutations << std::endl;
+    MAX_DEPTH = 7;
+    if (permutations < 50000000) {
+        std::cout << "DEPTH NINE TRIGGERED" <<std::endl;
+        MAX_DEPTH = 9;
+    }
+    if (permutations < 500000) {
+        std::cout << "DEPTH ELEVEN TRIGGERED" <<std::endl;
+        MAX_DEPTH = 9;
+    }
     LegalMove bestMove = lookIntoFutureMoves(color, 1, -INF, INF);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
-    std::cout << "-------------------------------------------- \n";
     std::cout << "lookIntoFutureMoves took " << duration.count() << " seconds\n";
-
+ std::cout << "-------------------------------------------- \n";
     return bestMove;
 };
 
@@ -58,7 +83,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     }
 
     // base case depth hit
-    if (depth == weights::MAX_DEPTH)
+    if (depth == MAX_DEPTH)
     {
         double value = SBAnalyzer::evaluateBoard(board);
         LegalMove dummyMove = LegalMove();
@@ -147,6 +172,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             }
         }
     }
+    if (depth <= 5) {
     // store result in TT
     BoundFlag flag = EXACT;
     if (bestMove.value <= originalAlpha)
@@ -158,8 +184,10 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
         .value = bestMove.value,
         .depth = depth,
         .flag = flag,
-        .bestMove = bestMove};
+        .bestMove = bestMove,
+        .age = currentAge, 
+    };
     transpositionTable[hash] = entry;
-
+    }
     return bestMove;
 }
