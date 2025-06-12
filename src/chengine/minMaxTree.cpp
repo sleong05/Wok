@@ -42,28 +42,26 @@ if (transpositionTable.size() > 500000) {
     // clearLog.close();
     auto start = std::chrono::high_resolution_clock::now();
 
-    auto blackMoves = MoveGetter::getMovesForTeam(BLACK, board);
-    auto whiteMoves = MoveGetter::getMovesForTeam(WHITE, board);
-
     // std::cout << "Number of black moves = " << blackMoves.size() << std::endl;
     // std::cout << "Number of white moves = " << whiteMoves.size() << std::endl;
-    double permutations = std::pow(whiteMoves.size(), 3) * std::pow(blackMoves.size(), 3);
-    std::cout << "estimated permutations = " <<  permutations << std::endl;
+    //std::cout << "estimated permutations = " <<  permutations << std::endl;
     MAX_DEPTH = 7;
-    if (permutations < 50000000) {
-        std::cout << "DEPTH NINE TRIGGERED" <<std::endl;
-        MAX_DEPTH = 9;
-    }
-    if (permutations < 500000) {
-        std::cout << "DEPTH ELEVEN TRIGGERED" <<std::endl;
-        MAX_DEPTH = 9;
-    }
-    LegalMove bestMove = lookIntoFutureMoves(color, 1, -INF, INF);
 
+    LegalMove bestMove = lookIntoFutureMoves(color, 1, -INF, INF);
     auto end = std::chrono::high_resolution_clock::now();
+
     std::chrono::duration<double> duration = end - start;
+    if (duration.count() < .5) { 
+        MAX_DEPTH = 9;
+        if (duration.count() < .25) MAX_DEPTH = 11;
+        if (duration.count() < .125) MAX_DEPTH = 13;
+
+        std::cout << "durating extend to " << MAX_DEPTH << std::endl;
+        bestMove = lookIntoFutureMoves(color, 1, -INF, INF);
+        }
     std::cout << "lookIntoFutureMoves took " << duration.count() << " seconds\n";
  std::cout << "-------------------------------------------- \n";
+
     return bestMove;
 };
 
@@ -94,7 +92,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // use transpositon table if already calcualated
     uint64_t hash = board.getHash();
     auto ttIt = transpositionTable.find(hash);
-    if (ttIt != transpositionTable.end() && ttIt->second.depth >= depth)
+    if (ttIt != transpositionTable.end() && ttIt->second.depth <= depth)
     {
         const TTEntry &entry = ttIt->second;
 

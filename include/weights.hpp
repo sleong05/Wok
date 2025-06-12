@@ -10,8 +10,8 @@ namespace weights
 
     constexpr double PASSED_PAWN = .4;
     constexpr double CHAIN_VALUE = .1;
-    constexpr double PAWN_INFRONT_OF_KING = .4;
-    constexpr double CENTER_PAWN_VALUE = .2;
+    constexpr double PAWN_INFRONT_OF_KING = .2;
+    constexpr double CENTER_PAWN_VALUE = .3;
     constexpr double DISTANCE_FROM_PROMOTION_VALUE = .05;
 
     inline constexpr std::array<std::array<double, 8>, 8> knightValues = {{{0.0, .05, .1, .1, .1, .1, .05, 0.0},

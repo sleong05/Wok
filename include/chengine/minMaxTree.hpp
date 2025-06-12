@@ -30,7 +30,7 @@ public:
     LegalMove lookIntoFutureMoves(int color, int depth, double alpha, double beta);
 
 private:
-int MAX_DEPTH = 7;
+    int MAX_DEPTH = 7;
     int currentAge = 0;  
     std::unordered_map<uint64_t, TTEntry> transpositionTable;
     Board &board;
