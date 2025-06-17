@@ -6,6 +6,7 @@
 #include "moveGetter.hpp"
 #include "weights.hpp"
 #include "constants.hpp"
+#include "chengine/quiesceSearch.hpp"
 #include <identifier.hpp>
 #include <algorithm>
 #include <string>
@@ -83,10 +84,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // base case depth hit
     if (depth == MAX_DEPTH)
     {
-        double value = SBAnalyzer::evaluateBoard(board);
-        LegalMove dummyMove = LegalMove();
-        dummyMove.value = value;
-        return dummyMove;
+        return quiesceSearch(board, color, alpha, beta, depth);
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
     // use transpositon table if already calcualated

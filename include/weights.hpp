@@ -8,6 +8,8 @@ namespace weights
 
     constexpr double KING_SAFE = .4;
 
+    constexpr int MAX_QUIESCE_DEPTH = 6;
+
     constexpr double PASSED_PAWN = .4;
     constexpr double CHAIN_VALUE = .1;
     constexpr double PAWN_INFRONT_OF_KING = .2;
