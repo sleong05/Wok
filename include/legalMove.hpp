@@ -27,8 +27,6 @@ struct LegalMove
     uint8_t oldCastlingRights = 0;
     int oldEnPassantFile = -1;
 
-
-
     double value;
 
     double priorityOfSearchValue = 0;
@@ -39,18 +37,22 @@ struct LegalMove
     LegalMove() : to(constants::NO_TILE_SELECTED), from(constants::NO_TILE_SELECTED),
                   pieceToMove(constants::EMPTY), pieceAtEnd(constants::EMPTY) {};
 
-        inline void computePriority()
+    inline void computePriority(bool isBestMove)
     {
         if (isPromotion)
-        {
             priorityOfSearchValue += 100;
-        }
 
         if (pieceAtEnd != constants::EMPTY)
         {
             int gain = Identifier::getPieceValue(pieceAtEnd) - Identifier::getPieceValue(pieceToMove);
             priorityOfSearchValue += std::max(gain, 1);
         }
+
+        if (isBestMove)
+        {
+            priorityOfSearchValue += 3;
+        }
+
         return;
     }
 };
@@ -63,6 +65,22 @@ operator<<(std::ostream &os, const LegalMove &move)
 
     os << "move " << Identifier::getPieceName(move.pieceToMove) << " to " << " " << toCol << ", " << toRow << " " << Identifier::getPieceName(move.pieceAtEnd) << " from " << fromRow << ", " << fromCol << " with value " << move.priorityOfSearchValue << '\n';
     return os;
+}
+
+inline bool operator==(const LegalMove &lhs, const LegalMove &rhs)
+{
+    return lhs.to == rhs.to &&
+           lhs.from == rhs.from &&
+           lhs.pieceToMove == rhs.pieceToMove &&
+           lhs.pieceAtEnd == rhs.pieceAtEnd &&
+           lhs.isCastle == rhs.isCastle &&
+           lhs.isPromotion == rhs.isPromotion &&
+           lhs.isEnPassant == rhs.isEnPassant &&
+           lhs.promotionPiece == rhs.promotionPiece &&
+           lhs.fromHasMoved == rhs.fromHasMoved &&
+           lhs.toHasMoved == rhs.toHasMoved &&
+           lhs.oldCastlingRights == rhs.oldCastlingRights &&
+           lhs.oldEnPassantFile == rhs.oldEnPassantFile;
 }
 
 #endif
