@@ -4,7 +4,7 @@
 #include "identifier.hpp"
 #include <array>
 
-std::vector<LegalMove> Rook::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState, std::array<std::array<bool, 8U>, 8U> &moveState)
+std::vector<LegalMove> Rook::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState, bool capturesOnly)
 {
     std::vector<LegalMove> moves;
     int color = Identifier::getTeam(piece);
@@ -25,11 +25,13 @@ std::vector<LegalMove> Rook::getPseudoMoves(int col, int row, int piece, std::ar
                 }
                 else
                 {
-                    moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]); // add other team
+                    if (!capturesOnly || boardState[tempRow][tempCol])
+                        moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]); // add other team
                     break;
                 }
             }
-            moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]);
+            if (!capturesOnly || boardState[tempRow][tempCol])
+                moves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]);
             tempCol += dCol;
             tempRow += dRow;
         }

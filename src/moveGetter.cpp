@@ -5,17 +5,16 @@
 #include <board.hpp>
 #include <iostream>
 #include "allPieces.hpp"
-std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &board)
+std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &board, bool capturesOnly)
 {
     auto boardState = board.getSquares();
     int piece = boardState[row][col];
-    auto moveState = board.getMovesArray();
 
     switch (piece)
     {
     case constants::WHITE_PAWN:
     {
-        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::WHITE_PAWN, board);
+        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::WHITE_PAWN, board, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -29,7 +28,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
 
     case constants::WHITE_KNIGHT:
     {
-        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::WHITE_KNIGHT, boardState, moveState);
+        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::WHITE_KNIGHT, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -43,7 +42,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
 
     case constants::WHITE_BISHOP:
     {
-        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::WHITE_BISHOP, boardState, moveState);
+        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::WHITE_BISHOP, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -57,7 +56,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
 
     case constants::WHITE_ROOK:
     {
-        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::WHITE_ROOK, boardState, moveState);
+        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::WHITE_ROOK, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -71,7 +70,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
 
     case constants::WHITE_QUEEN:
     {
-        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::WHITE_QUEEN, boardState, moveState);
+        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::WHITE_QUEEN, boardState, capturesOnly);
 
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
@@ -86,7 +85,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
 
     case constants::WHITE_KING:
     {
-        auto pseudoMoves = King::getPseudoMoves(col, row, constants::WHITE_KING, board);
+        auto pseudoMoves = King::getPseudoMoves(col, row, constants::WHITE_KING, board, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -101,7 +100,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     case constants::BLACK_PAWN:
 
     {
-        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::BLACK_PAWN, board);
+        auto pseudoMoves = Pawn::getPseudoMoves(col, row, constants::BLACK_PAWN, board, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -114,7 +113,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     }
     case constants::BLACK_KNIGHT:
     {
-        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::BLACK_KNIGHT, boardState, moveState);
+        auto pseudoMoves = Knight::getPseudoMoves(col, row, constants::BLACK_KNIGHT, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -127,7 +126,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     }
     case constants::BLACK_BISHOP:
     {
-        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::BLACK_BISHOP, boardState, moveState);
+        auto pseudoMoves = Bishop::getPseudoMoves(col, row, constants::BLACK_BISHOP, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -141,7 +140,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     case constants::BLACK_ROOK:
 
     {
-        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::BLACK_ROOK, boardState, moveState);
+        auto pseudoMoves = Rook::getPseudoMoves(col, row, constants::BLACK_ROOK, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -155,7 +154,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     case constants::BLACK_QUEEN:
 
     {
-        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::BLACK_QUEEN, boardState, moveState);
+        auto pseudoMoves = Queen::getPseudoMoves(col, row, constants::BLACK_QUEEN, boardState, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -169,7 +168,7 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     case constants::BLACK_KING:
 
     {
-        auto pseudoMoves = King::getPseudoMoves(col, row, constants::BLACK_KING, board);
+        auto pseudoMoves = King::getPseudoMoves(col, row, constants::BLACK_KING, board, capturesOnly);
         std::vector<LegalMove> legalMoves;
         for (auto &move : pseudoMoves)
         {
@@ -195,7 +194,7 @@ bool static inline sortingFunction(const LegalMove &a, const LegalMove &b, bool 
     return a.priorityOfSearchValue > b.priorityOfSearchValue;
 }
 
-std::vector<LegalMove> MoveGetter::getMovesForTeam(int color, Board &board)
+std::vector<LegalMove> MoveGetter::getMovesForTeam(int color, Board &board, bool capturesOnly)
 {
     std::vector<LegalMove> LegalMoves;
     auto piecePositions = (color == constants::WHITE) ? board.whitePositions : board.blackPositions;
@@ -205,22 +204,11 @@ std::vector<LegalMove> MoveGetter::getMovesForTeam(int color, Board &board)
     for (auto &position : piecePositions)
     {
         auto [col, row] = position;
-        // get if queen is in danger for optimizzations later
-
-        /*
-        if (boardState[row][col] == constants::WHITE_QUEEN or boardState[row][col] == constants::BLACK_QUEEN)
-        {
-            // std::cout << "checking attack at spot " << row << ", " << col << std::endl;
-            // queenInDanger = squareAttacker::isSquareUnderAttack(col, row, color, boardState);
-            // std::cout << "finished check\n";
-        } */
-        std::vector<LegalMove> pieceMoves = getMovesFromPieceAt(col, row, board);
+        std::vector<LegalMove> pieceMoves = getMovesFromPieceAt(col, row, board, capturesOnly);
 
         LegalMoves.insert(LegalMoves.end(), pieceMoves.begin(), pieceMoves.end());
     }
 
-    // std::sort(LegalMoves.begin(), LegalMoves.end(), [&](const LegalMove &a, const LegalMove &b)
-    //{ return sortingFunction(a, b, queenInDanger); });
     return LegalMoves;
 }
 

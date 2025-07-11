@@ -5,5 +5,5 @@
 class Pawn
 {
 public:
-    static std::vector<LegalMove> getPseudoMoves(int col, int row, int piece, Board &board);
+    static std::vector<LegalMove> getPseudoMoves(int col, int row, int piece, Board &board, bool capturesOnly = false);
 };

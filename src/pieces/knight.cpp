@@ -4,7 +4,7 @@
 #include <array>
 #include "identifier.hpp"
 #include <tuple>
-std::vector<LegalMove> Knight::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState, std::array<std::array<bool, 8U>, 8U> &moveState)
+std::vector<LegalMove> Knight::getPseudoMoves(int col, int row, int piece, std::array<std::array<int, 8U>, 8U> &boardState, bool capturesOnly)
 {
     std::tuple<int, int> from = {col, row};
     int color = Identifier::getTeam(piece);
@@ -19,7 +19,8 @@ std::vector<LegalMove> Knight::getPseudoMoves(int col, int row, int piece, std::
         {
             if (newRow >= 0 and newRow < 8 and newCol < 8 and newCol >= 0 and (boardState[newRow][newCol] == constants::EMPTY or Identifier::getTeam(boardState[newRow][newCol]) != color))
             {
-                pseudoMoves.emplace_back(std::make_tuple(newCol, newRow), from, piece, boardState[newRow][newCol]);
+                if (!capturesOnly || boardState[newRow][newCol])
+                    pseudoMoves.emplace_back(std::make_tuple(newCol, newRow), from, piece, boardState[newRow][newCol]);
             }
         }
     }

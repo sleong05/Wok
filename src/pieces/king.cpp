@@ -5,7 +5,7 @@
 #include <array>
 #include "pieces/king.hpp"
 
-std::vector<LegalMove> King::getPseudoMoves(int col, int row, int piece, Board &board)
+std::vector<LegalMove> King::getPseudoMoves(int col, int row, int piece, Board &board, bool capturesOnly)
 {
     int color = Identifier::getTeam(piece);
     auto boardState = board.getSquares();
@@ -14,7 +14,8 @@ std::vector<LegalMove> King::getPseudoMoves(int col, int row, int piece, Board &
     auto moveState = board.getMovesArray();
     // castling
     auto castleMoves = checkCastling(moveState, boardState, color, from);
-    for (auto const &move : castleMoves) {
+    for (auto const &move : castleMoves)
+    {
         pseudoMoves.push_back(move);
     }
     // normal moves
@@ -27,7 +28,8 @@ std::vector<LegalMove> King::getPseudoMoves(int col, int row, int piece, Board &
         {
             if (boardState[tempRow][tempCol] == constants::EMPTY or Identifier::getTeam(boardState[tempRow][tempCol]) != color)
             {
-                pseudoMoves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]);
+                if (!capturesOnly || boardState[tempRow][tempCol])
+                    pseudoMoves.emplace_back(std::make_tuple(tempCol, tempRow), from, piece, boardState[tempRow][tempCol]);
             }
         }
     }

@@ -5,7 +5,7 @@
 #include "identifier.hpp"
 #include <cstdlib>
 
-std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &board)
+std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &board, bool capturesOnly)
 {
 
     int color = Identifier::getTeam(piece);
@@ -35,23 +35,26 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
         }
     }
     // move foward and jump foward
-    if (boardState[row + color][col] == constants::EMPTY)
+    if (!capturesOnly)
     {
-        if (row + color == promotionRow)
+        if (boardState[row + color][col] == constants::EMPTY)
         {
-            LegalMove promotion = LegalMove(std::make_tuple(col, row + color), from, piece, boardState[row + color][col]);
-            promotion.isPromotion = true;
-            moves.push_back(promotion);
-        }
-        else
-        {
-            moves.emplace_back(std::make_tuple(col, row + color), from, piece, boardState[row + color][col]); // foward
-        }
+            if (row + color == promotionRow)
+            {
+                LegalMove promotion = LegalMove(std::make_tuple(col, row + color), from, piece, boardState[row + color][col]);
+                promotion.isPromotion = true;
+                moves.push_back(promotion);
+            }
+            else
+            {
+                moves.emplace_back(std::make_tuple(col, row + color), from, piece, boardState[row + color][col]); // foward
+            }
 
-        int startingRow = (color == constants::WHITE) ? 6 : 1;
-        if (boardState[row + color * 2][col] == constants::EMPTY and row == startingRow)
-        {
-            moves.emplace_back(std::make_tuple(col, row + color * 2), from, piece, boardState[row + color * 2][col]); // jump foward
+            int startingRow = (color == constants::WHITE) ? 6 : 1;
+            if (boardState[row + color * 2][col] == constants::EMPTY and row == startingRow)
+            {
+                moves.emplace_back(std::make_tuple(col, row + color * 2), from, piece, boardState[row + color * 2][col]); // jump foward
+            }
         }
     }
 

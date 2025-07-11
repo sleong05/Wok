@@ -37,7 +37,7 @@ LegalMove quiesceSearch(Board &board, int color, double alpha, double beta, int 
     }
 
     // get capturing moves
-    std::vector<LegalMove> moves = MoveGetter::getMovesForTeam(color, board);
+    std::vector<LegalMove> moves = MoveGetter::getMovesForTeam(color, board, true);
     moves.erase(std::remove_if(moves.begin(), moves.end(), [](const LegalMove &move)
                                { return move.pieceAtEnd == EMPTY; }),
                 moves.end());
