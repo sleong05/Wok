@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "compactMove.hpp"
 #include <chrono>
-
+#include <shared_mutex>
 enum BoundFlag : uint8_t
 {
     EXACT,
@@ -24,15 +24,16 @@ struct TTEntry
 class MinMaxTree
 {
 public:
-    MinMaxTree(Board &board);
-    LegalMove getBestMove(int color);
-    LegalMove lookIntoFutureMoves(int color, int depth, double alpha, double beta, int maxDepth);
+    MinMaxTree();
+    LegalMove getBestMove(Board &board, int color);
+    LegalMove lookIntoFutureMoves(Board &board, int color, int depth, double alpha, double beta, int maxDepth);
 
 private:
+    LegalMove evaluateMoves(std::vector<LegalMove> &moves, Board board, int color, int maxDepth);
+
+    std::shared_mutex ttMutex;
     bool timeUp = false;
-    int currentAge = 0;
     std::chrono::_V2::system_clock::time_point start;
-    std::chrono::duration<double> maxTimeMs = std::chrono::seconds(3);
+    std::chrono::duration<double> maxTimeMs = std::chrono::seconds(5);
     std::unordered_map<uint64_t, TTEntry> transpositionTable;
-    Board &board;
 };

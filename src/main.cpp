@@ -44,7 +44,10 @@ int main()
                     }
 
                     // check for game end
-
+                    if (board.isThreefoldRepetition())
+                    {
+                        gameOver = true;
+                    }
                     if (!gameOver and board.getLastMove().from != constants::NO_TILE_SELECTED)
                     {
                         int currentColor = Identifier::getTeam(board.getLastMove().pieceToMove) == constants::WHITE ? constants::BLACK : constants::WHITE;

@@ -4,13 +4,15 @@
 #include "legalMove.hpp"
 #include <array>
 #include <SFML/Graphics.hpp>
+#include <unordered_map>
 class MoveGetter;
 class SBAnalyzer;
 
-enum CastlingRight {
-    WHITE_KINGSIDE  = 1 << 0, // 0001
+enum CastlingRight
+{
+    WHITE_KINGSIDE = 1 << 0,  // 0001
     WHITE_QUEENSIDE = 1 << 1, // 0010
-    BLACK_KINGSIDE  = 1 << 2, // 0100
+    BLACK_KINGSIDE = 1 << 2,  // 0100
     BLACK_QUEENSIDE = 1 << 3  // 1000
 };
 
@@ -24,6 +26,7 @@ public:
     bool isKingInCheck(int color);
     void castle(LegalMove &move);
     void handlePromotion(LegalMove &move);
+    bool isThreefoldRepetition() const;
     void removePositionFromColorTracker(int color, int newCol, int newRow);
     void addPositionToColorTracker(int color, int newCol, int newRow);
     void updateKnownPositions(LegalMove &move);
@@ -41,6 +44,7 @@ public:
     LegalMove getLastMove();
 
     const std::array<std::array<bool, 8>, 8> &getMovesArray();
+    Board(const Board &other);
 
 private:
     void removeCastlingRight(CastlingRight right);
@@ -54,7 +58,6 @@ private:
     uint64_t enPassantFileZobrist[8];
     int enPassantFile = -1;
 
-
     std::tuple<int, int> whiteKingPosition;
     std::tuple<int, int> blackKingPosition;
     LegalMove lastMove;
@@ -63,6 +66,9 @@ private:
     std::vector<std::tuple<int, int>> whitePositions;
     void initilizeBoard();
     std::array<std::array<int, 8>, 8> squares;
+
+    std::unordered_map<uint64_t, int> repetitionCount;
+    std::vector<uint64_t> positionHistory;
 };
 
 #endif

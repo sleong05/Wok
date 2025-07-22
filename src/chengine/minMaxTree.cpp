@@ -14,21 +14,112 @@
 #include <limits>
 #include <chrono>
 #include <random>
+#include <thread>
+#include <shared_mutex>
+#include <bits/stdc++.h>
 using namespace constants;
 using namespace std::chrono;
 
-MinMaxTree::MinMaxTree(Board &board) : board(board)
+constexpr double INF = 1000000000.0;
+MinMaxTree::MinMaxTree()
 {
 }
 
-LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them alkways look for the lowest value move
+LegalMove MinMaxTree::getBestMove(Board &board, int color) // chengine is black so make them alkways look for the lowest value move
 {
-    double INF = 1000000000.0;
+    // double INF = 1000000000.0;
+    // start = high_resolution_clock::now();
+    // timeUp = false;
+
+    // LegalMove bestMove;
+    // int maxDepth = 2;
+
+    // // iterative deepening
+    // int maxThreads = std::thread::hardware_concurrency();
+    // if (maxThreads == 0)
+    //     maxThreads = 4;
+    // maxThreads = std::min(maxThreads, 1);
+    // std::cout << "Threads used: " << maxThreads << std::endl;
+    // while (true)
+    // {
+    //     auto now = high_resolution_clock::now();
+    //     duration<double> duration = now - start;
+
+    //     if (duration > maxTimeMs or timeUp)
+    //         break;
+
+    //     // get moves
+    //     std::vector<LegalMove> legalMoves = MoveGetter::getMovesForTeam(color, board);
+    //     if (legalMoves.empty())
+    //         break;
+
+    //     // distrubte moves into buckets for threads to look through
+    //     int threadCount = std::min((int)legalMoves.size(), maxThreads);
+    //     std::vector<std::vector<LegalMove>> buckets(threadCount);
+    //     for (int i = 0; i < int(legalMoves.size()); ++i)
+    //         buckets[i % threadCount].push_back(legalMoves[i]);
+
+    //     std::mutex bestMutex;
+    //     double bestEval = (color == WHITE) ? -INF : INF;
+    //     LegalMove bestMoveAtDepth;
+
+    //     std::vector<std::thread> threads;
+    //     for (int t = 0; t < threadCount; ++t)
+    //     {
+    //         threads.emplace_back(
+    //             [&, t]()
+    //             {
+    //                 for (auto move : buckets[t])
+    //                 {
+    //                     auto now = std::chrono::high_resolution_clock::now();
+    //                     if (now - start > maxTimeMs || timeUp)
+    //                         return;
+    //                     Board boardCopy = board;
+    //                     boardCopy.doMove(move);
+    //                     double eval = lookIntoFutureMoves(boardCopy, color, 1, -INF, INF, maxDepth).value;
+    //                     std::cout << eval << move << std::endl;
+    //                     boardCopy.undoMove(move);
+
+    //                     std::lock_guard<std::mutex> lock(bestMutex);
+    //                     if ((color == WHITE && eval > bestEval) || (color == BLACK && eval < bestEval))
+    //                     {
+    //                         bestEval = eval;
+    //                         bestMoveAtDepth = move;
+    //                         move.value = eval;
+    //                     }
+    //                 }
+    //             });
+    //     }
+
+    //     for (auto &t : threads)
+    //         t.join();
+
+    //     if (duration > maxTimeMs or timeUp)
+    //         break;
+    //     bestMove = bestMoveAtDepth;
+
+    //     std::cout << "at " << maxDepth << " best move is " << bestMove << std::endl;
+    //     maxDepth++;
+    // }
+    // std::cout << "at " << maxDepth << " best move is " << bestMove << std::endl;
+    // return bestMove;
+
     start = high_resolution_clock::now();
+
+    int maxThreads = 8;
+    // get moves
+    std::vector<LegalMove> legalMoves = MoveGetter::getMovesForTeam(color, board);
+
+    // split the moves into buckets based on thread count
+    int threadCount = std::min((int)legalMoves.size(), maxThreads);
+
+    std::vector<std::vector<LegalMove>> buckets(threadCount);
+    for (int i = 0; i < int(legalMoves.size()); ++i)
+        buckets[i % threadCount].push_back(legalMoves[i]);
 
     LegalMove bestMove;
     timeUp = false;
-    int maxDepth = 5;
+    int maxDepth = 2;
     // iterative deepening
     while (true)
     {
@@ -38,12 +129,38 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
         if (duration > maxTimeMs)
             break;
 
-        LegalMove move = lookIntoFutureMoves(color, 1, -INF, INF, maxDepth);
+        std::vector<LegalMove> threadResults(threadCount);
+        std::vector<std::thread> threads;
 
+        // split work into threads
+        for (int i = 0; i < threadCount; i++)
+        {
+            threads.emplace_back([&, i]()
+                                 { threadResults[i] = evaluateMoves(buckets[i], board, color, maxDepth); });
+        }
+        // join threads
+        for (auto &t : threads)
+            t.join();
+        // choose best move
+        LegalMove bestMoveAtDepth;
+        double bestEval = (color == WHITE) ? -INF : INF;
+
+        for (auto &move : threadResults)
+        {
+
+            bool isBetter = (color == WHITE) ? move.value > bestEval : move.value < bestEval;
+            if (isBetter)
+            {
+                bestEval = move.value;
+                bestMoveAtDepth = move;
+            }
+
+            if (timeUp)
+                break;
+        }
         if (timeUp)
             break;
-        bestMove = move;
-
+        bestMove = bestMoveAtDepth;
         std::cout << "at " << maxDepth << " best move is " << bestMove << std::endl;
         maxDepth++;
     }
@@ -51,10 +168,41 @@ LegalMove MinMaxTree::getBestMove(int color) // chengine is black so make them a
     return bestMove;
 };
 
-LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, double beta, int maxDepth)
+LegalMove MinMaxTree::evaluateMoves(std::vector<LegalMove> &bucket, Board boardCopy, int color, int maxDepth)
+{
+    double bestEval = (color == WHITE) ? -INF : INF;
+    LegalMove bestMove;
+    for (auto &move : bucket)
+    {
+        boardCopy.doMove(move);
+
+        move.value = lookIntoFutureMoves(boardCopy, color * -1, 1, -INF, INF, maxDepth).value;
+
+        // std::cout << move << "\n";
+        bool isBetter = (color == WHITE) ? move.value > bestEval : move.value < bestEval;
+        if (isBetter)
+        {
+            bestEval = move.value;
+            bestMove = move;
+        }
+
+        if (timeUp)
+            break;
+
+        boardCopy.undoMove(move);
+    }
+
+    return bestMove;
+}
+
+LegalMove MinMaxTree::lookIntoFutureMoves(Board &board, int color, int depth, double alpha, double beta, int maxDepth)
 {
     // if we are out of time return and stop recursion
+
     auto now = high_resolution_clock::now();
+
+    // std::cout << "Checking time elapsed at depth " << depth << std::endl;
+
     duration<double> duration = now - start;
     if (duration > maxTimeMs)
     {
@@ -68,6 +216,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     //      -----------------------------------------BASE CASES--------------------------------------------------
     if (not MoveGetter::hasMoveLeft(color, board))
     {
+        // std::cout << "mate base casse at " << depth << std::endl;
         double value = board.isKingInCheck(color) ? (weights::MATE - (depth * 100)) * color : weights::DRAW;
 
         LegalMove dummyMove = LegalMove();
@@ -78,15 +227,27 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
     // base case depth hit
     if (depth == maxDepth)
     {
+        // std::cout << "entering quiesesearch at depth " << depth << std::endl;
         return quiesceSearch(board, color, alpha, beta, depth);
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
     // use transpositon table if already calcualated
+    bool hasTTEntry = false;
+    TTEntry entry;
     uint64_t hash = board.getHash();
-    auto ttIt = transpositionTable.find(hash);
-    if (ttIt != transpositionTable.end() && ttIt->second.depth >= maxDepth - depth)
+    std::unordered_map<uint64_t, TTEntry>::iterator ttIt;
     {
-        const TTEntry &entry = ttIt->second;
+        std::shared_lock<std::shared_mutex> readLock(ttMutex);
+        ttIt = transpositionTable.find(hash);
+        if (ttIt != transpositionTable.end() && ttIt->second.depth >= maxDepth - depth)
+        {
+            hasTTEntry = true;
+            entry = ttIt->second;
+        }
+    }
+    if (hasTTEntry)
+    {
+        // std::cout << "ttentry found " << std::endl;
         if (entry.flag == EXACT)
         {
             return entry.bestMove;
@@ -100,14 +261,15 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             return entry.bestMove;
         }
     }
-    // generate and evalaute all moves
+    // std::cout << "ttentry not found " << std::endl;
+    //  generate and evalaute all moves
     std::vector<LegalMove> allMoves = MoveGetter::getMovesForTeam(color, board);
     bool isBestMove = false;
 
     for (auto &move : allMoves)
     {
         isBestMove = false;
-        if (ttIt != transpositionTable.end() && ttIt->second.bestMove == move)
+        if (hasTTEntry && ttIt->second.bestMove == move)
             isBestMove = true;
         move.computePriority(isBestMove);
     }
@@ -124,17 +286,23 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
         // cache
         uint64_t hashBefore = board.getHash();
         board.doMove(move);
-
-        move.value = lookIntoFutureMoves(color * -1, depth + 1, alpha, beta, maxDepth).value;
-
+        // check for three fold repition
+        if (board.isThreefoldRepetition())
+        {
+            LegalMove dummyMove;
+            dummyMove.value = 0;
+            continue;
+        }
+        move.value = lookIntoFutureMoves(board, color * -1, depth + 1, alpha, beta, maxDepth).value;
+        // std::cout << "Looked into future moves. bestmove value is " << move.value << std::endl;
         board.undoMove(move);
         uint64_t hashAfter = board.getHash();
         if (hashBefore != hashAfter)
         {
             std::cerr << "Zobrist hash mismatch after undo!\n";
-            std::abort();
         }
-        // update bestMove
+        // std::cout << "alpha beta cutoffs begin" << std::endl;
+        //  update bestMove
         if (color == WHITE)
         {
             if (move.value > bestMove.value)
@@ -163,22 +331,30 @@ LegalMove MinMaxTree::lookIntoFutureMoves(int color, int depth, double alpha, do
             }
         }
     }
+    // std::cout << "alpha beta cutoffsend" << std::endl;
+    // std::cout << "transpo table start" << std::endl;
     if (depth <= 5)
     {
-        // store result in TT
-        BoundFlag flag = EXACT;
-        if (bestMove.value <= originalAlpha)
-            flag = UPPERBOUND;
-        else if (bestMove.value >= originalBeta)
-            flag = LOWERBOUND;
+        std::unique_lock<std::shared_mutex> writeLock(ttMutex);
+        auto hashedMove = transpositionTable.find(hash);
+        if (hashedMove == transpositionTable.end() || hashedMove->second.depth < maxDepth - depth)
+        {
+            // store result in TT
+            BoundFlag flag = EXACT;
+            if (bestMove.value <= originalAlpha)
+                flag = UPPERBOUND;
+            else if (bestMove.value >= originalBeta)
+                flag = LOWERBOUND;
 
-        TTEntry entry = {
-            .value = bestMove.value,
-            .depth = maxDepth - depth,
-            .flag = flag,
-            .bestMove = bestMove,
-        };
-        transpositionTable[hash] = entry;
+            TTEntry entry = {
+                .value = bestMove.value,
+                .depth = maxDepth - depth,
+                .flag = flag,
+                .bestMove = bestMove,
+            };
+            transpositionTable[hash] = entry;
+        }
     }
+    // std::cout << "transpo table end" << std::endl;
     return bestMove;
 }

@@ -35,7 +35,9 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
         }
     }
     // move foward and jump foward
-    if (!capturesOnly)
+    int forward1 = row + color;
+    int forward2 = row + 2 * color;
+    if (!capturesOnly && forward1 >= 0 && forward1 < 8)
     {
         if (boardState[row + color][col] == constants::EMPTY)
         {
@@ -51,7 +53,7 @@ std::vector<LegalMove> Pawn::getPseudoMoves(int col, int row, int piece, Board &
             }
 
             int startingRow = (color == constants::WHITE) ? 6 : 1;
-            if (boardState[row + color * 2][col] == constants::EMPTY and row == startingRow)
+            if (row == startingRow and forward2 >= 0 and forward2 < 8 and boardState[row + color * 2][col] == constants::EMPTY)
             {
                 moves.emplace_back(std::make_tuple(col, row + color * 2), from, piece, boardState[row + color * 2][col]); // jump foward
             }

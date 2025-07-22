@@ -15,13 +15,13 @@ LegalMove quiesceSearch(Board &board, int color, double alpha, double beta, int 
         mateMove.value = value;
         return mateMove;
     }
-
     LegalMove bestMove;
     double standPat = SBAnalyzer::evaluateBoard(board);
     bestMove.value = standPat;
-
     if (depth > weights::MAX_QUIESCE_DEPTH)
+    {
         return bestMove;
+    }
     // alpha-beta on static eval
     if (color == WHITE)
     {
@@ -56,7 +56,10 @@ LegalMove quiesceSearch(Board &board, int color, double alpha, double beta, int 
         if (color == WHITE)
         {
             if (score > bestMove.value)
-                bestMove = move, bestMove.value = score;
+            {
+                bestMove = move;
+                bestMove.value = score;
+            }
             alpha = std::max(alpha, score);
             if (alpha >= beta)
                 break;
@@ -64,12 +67,14 @@ LegalMove quiesceSearch(Board &board, int color, double alpha, double beta, int 
         else
         {
             if (score < bestMove.value)
-                bestMove = move, bestMove.value = score;
+            {
+                bestMove = move;
+                bestMove.value = score;
+            }
             beta = std::min(beta, score);
             if (alpha >= beta)
                 break;
         }
     }
-
     return bestMove;
 }

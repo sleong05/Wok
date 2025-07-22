@@ -63,7 +63,7 @@ operator<<(std::ostream &os, const LegalMove &move)
     auto [toCol, toRow] = move.to;
     auto [fromCol, fromRow] = move.from;
 
-    os << "move " << Identifier::getPieceName(move.pieceToMove) << " to " << " " << toCol << ", " << toRow << " " << Identifier::getPieceName(move.pieceAtEnd) << " from " << fromRow << ", " << fromCol << " with value " << move.priorityOfSearchValue << '\n';
+    os << Identifier::getPieceName(move.pieceToMove) << " to " << " " << toCol << ", " << toRow << " " << " from " << fromCol << ", " << fromRow << " with value " << move.value << '\n';
     return os;
 }
 

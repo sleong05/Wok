@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wall -g -O3 -MMD -Iinclude
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+LDFLAGS =  -lsfml-graphics -lsfml-window -lsfml-system
 
 TARGET = main
 

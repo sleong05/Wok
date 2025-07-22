@@ -181,7 +181,6 @@ std::vector<LegalMove> MoveGetter::getMovesFromPieceAt(int col, int row, Board &
     }
 
     default:
-        std::cout << "default case return empty";
         return {};
     }
 }
@@ -197,6 +196,7 @@ bool static inline sortingFunction(const LegalMove &a, const LegalMove &b, bool 
 std::vector<LegalMove> MoveGetter::getMovesForTeam(int color, Board &board, bool capturesOnly)
 {
     std::vector<LegalMove> LegalMoves;
+    LegalMoves.reserve(50);
     auto piecePositions = (color == constants::WHITE) ? board.whitePositions : board.blackPositions;
 
     // bool queenInDanger = false;

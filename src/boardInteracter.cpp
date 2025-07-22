@@ -40,7 +40,11 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
 
             sf::RenderWindow *windowPtr = &window;
             board.doMove(it->second, windowPtr, true);
-
+            if (board.isThreefoldRepetition())
+            {
+                std::cout << "Draw by threefold repitition";
+                return;
+            }
             playersTurn *= -1;
             selectedPiece = constants::NO_TILE_SELECTED;
             movesMap.clear();
@@ -52,7 +56,7 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
             boardDrawer.drawPieces(board, window);
             window.display();
             // do engine Move
-            LegalMove chengineMove = chengine.getMove();
+            LegalMove chengineMove = chengine.getMove(board, constants::BLACK);
             std::cout << "move selected value was " << chengineMove.value << std::endl;
             if (chengineMove.from == constants::NO_TILE_SELECTED)
             { // game is over
@@ -60,6 +64,11 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
                 return;
             }
             board.doMove(chengineMove);
+            if (board.isThreefoldRepetition())
+            {
+                std::cout << "Draw by threefold repitition";
+                return;
+            }
             chengineMoveSquare = chengineMove.to;
             playersTurn *= -1;
 

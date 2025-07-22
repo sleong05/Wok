@@ -6,7 +6,7 @@ class Chengine
 {
 public:
     Chengine(Board &board);
-    LegalMove getMove();
+    LegalMove getMove(Board &board, int color);
 
     LegalMove getRandomMove();
 

@@ -8,10 +8,10 @@
 
 using namespace constants;
 
-LegalMove Chengine::getMove()
+LegalMove Chengine::getMove(Board &board, int color)
 {
 
-    return miniMax.getBestMove(constants::BLACK);
+    return miniMax.getBestMove(board, color);
 }
 
 LegalMove Chengine::getRandomMove()
@@ -29,6 +29,6 @@ LegalMove Chengine::getRandomMove()
     return possibleMoves[randomNumber];
 }
 
-Chengine::Chengine(Board &board) : miniMax(board), board(board)
+Chengine::Chengine(Board &board) : miniMax(), board(board)
 {
 }

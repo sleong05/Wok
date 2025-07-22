@@ -7,6 +7,9 @@ using namespace constants;
 
 double SBAnalyzer::evaluateBoard(const Board &board)
 {
+    if (board.isThreefoldRepetition())
+        return 0;
+
     double boardValue = 0;
     const auto boardState = board.getSquares();
     const auto moveState = board.hasMovedArray;
@@ -28,6 +31,11 @@ double SBAnalyzer::evaluateBoard(const Board &board)
 
 double SBAnalyzer::getPieceValue(int piece, int col, int row, const std::array<std::array<int, 8U>, 8U> &boardState, const std::array<std::array<bool, 8U>, 8U> &moveState)
 {
+    if (piece == constants::EMPTY)
+    {
+        std::cerr << "Invalid piece ID: " << piece << std::endl;
+        return 0; // or some safe default
+    }
     double hasNotMoved = (moveState[row][col] == false) ? 1.0 / 3.0 : 0.0;
     switch (piece)
     {
