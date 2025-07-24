@@ -37,6 +37,7 @@ public:
     int showPromotionMenu(sf::RenderWindow *window, int color);
     std::vector<std::tuple<int, int>> getBlackMoves();
     std::vector<std::tuple<int, int>> getWhiteMoves();
+    int getMoveCount() const;
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
     const uint64_t &getHash();
@@ -47,6 +48,7 @@ public:
     Board(const Board &other);
 
 private:
+    int movesDone = 0;
     void removeCastlingRight(CastlingRight right);
     uint64_t zobristSideToMove;
     uint64_t currentHash;

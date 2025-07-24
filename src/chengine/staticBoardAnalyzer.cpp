@@ -17,20 +17,23 @@ double SBAnalyzer::evaluateBoard(const Board &board)
     for (const auto &position : board.blackPositions)
     {
         auto [col, row] = position;
-        boardValue -= getPieceValue(boardState[row][col], col, row, boardState, moveState);
+        boardValue -= getPieceValue(boardState[row][col], col, row, board);
     }
 
     for (const auto &position : board.whitePositions)
     {
 
         auto [col, row] = position;
-        boardValue += getPieceValue(boardState[row][col], col, row, boardState, moveState);
+        boardValue += getPieceValue(boardState[row][col], col, row, board);
     }
     return boardValue;
 }
 
-double SBAnalyzer::getPieceValue(int piece, int col, int row, const std::array<std::array<int, 8U>, 8U> &boardState, const std::array<std::array<bool, 8U>, 8U> &moveState)
+double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board)
 {
+    const auto boardState = board.getSquares();
+    const auto moveState = board.hasMovedArray;
+    int movesDone = board.getMoveCount();
     if (piece == constants::EMPTY)
     {
         std::cerr << "Invalid piece ID: " << piece << std::endl;
@@ -42,7 +45,7 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const std::array<s
     case WHITE_PAWN:
     case BLACK_PAWN:
     {
-        double notMovedValue = (col != 5) ? (hasNotMoved) / 3.0 : -.5;                    // kings pawn shouldnt move
+        double notMovedValue = (col != 5) ? 0 : -.5;                                      // kings pawn shouldnt move
         return 1.0 + TheoryEvaluator::getPawnValue(col, row, boardState) - notMovedValue; // moveState is 0 or 1. hasMoved = true =1
     }
 
@@ -60,11 +63,11 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const std::array<s
 
     case WHITE_QUEEN:
     case BLACK_QUEEN:
-        return 9.0 + TheoryEvaluator::getQueenValue(col, row, boardState) + hasNotMoved; // we dont want these peices to move unless they arleady have
+        return 9.0 + TheoryEvaluator::getQueenValue(col, row, boardState); // we dont want these peices to move unless they arleady have
 
     case WHITE_KING:
     case BLACK_KING:
-        return 0.0 + TheoryEvaluator::getKingValue(col, row, boardState, moveState) - hasNotMoved;
+        return 0.0 + TheoryEvaluator::getKingValue(col, row, boardState, moveState, movesDone) - hasNotMoved;
 
     default:
         std::cerr << "Invalid piece ID: " << piece << '\n';

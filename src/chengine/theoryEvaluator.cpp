@@ -14,21 +14,14 @@ double TheoryEvaluator::getPawnValue(int col, int row, const std::array<std::arr
     int distanceFromPromotion = (color == constants::WHITE) ? 7 - row : row;
     double value = 0;
     // check left chain
-    if ((col == 3 or col == 4) and (row == 3 or row == 4))
+    if ((col == 2 or col == 3 or col == 4) and (row == 3 or row == 4))
     {
         value += CENTER_PAWN_VALUE;
     }
 
-    if (col != 0)
-    {
-        if (boardState[row + color][col - 1] == myPawn)
-            value += CHAIN_VALUE;
-    }
-    if (col != 7)
-    {
-        if (boardState[row + color][col + 1] == myPawn)
-            value += CHAIN_VALUE;
-    }
+    // doubled pawns
+    if (boardState[row + color][col] == myPawn or (distanceFromPromotion > 1 and boardState[row + color * 2][col]))
+        value -= DOUBLED_PAWN;
 
     // encourage pushing of pawns
     value += DISTANCE_FROM_PROMOTION_VALUE * distanceFromPromotion;
@@ -73,10 +66,10 @@ double TheoryEvaluator::getRookValue(int col, int row, const std::array<std::arr
 
 double TheoryEvaluator::getQueenValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return (Rook::getNumberOfMoves(col, row, boardState) + Bishop::getNumberOfMoves(col, row, boardState)) / 56.0;
+    return (Rook::getNumberOfMoves(col, row, boardState) + Bishop::getNumberOfMoves(col, row, boardState)) / 46.0;
 }
 
-double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState, const std::array<std::array<bool, 8u>, 8u> &moveState)
+double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState, const std::array<std::array<bool, 8u>, 8u> &moveState, int movesDone)
 {
     double value = 0;
     // castling
@@ -98,10 +91,19 @@ double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::arr
             }
         }
     }
+
+    // encourage castling
+    if (movesDone < 30)
+    {
+        if (col == 3 or col == 4 or col == 5)
+        {
+            value -= KING_SAFE;
+        }
+    }
     return value;
 }
 
 double TheoryEvaluator::getBishopValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return Bishop::getNumberOfMoves(col, row, boardState) / 26.0;
+    return Bishop::getNumberOfMoves(col, row, boardState) / 23.0;
 }

@@ -160,7 +160,6 @@ Board::Board(const Board &other)
       repetitionCount(other.repetitionCount),
       positionHistory(other.positionHistory)
 {
-    // Deep copy zobrist if needed:
     for (int x = 0; x < 8; ++x)
         for (int y = 0; y < 8; ++y)
             for (int p = 0; p < 12; ++p)
@@ -169,6 +168,7 @@ Board::Board(const Board &other)
 
 void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
+    movesDone++;
     move.oldEnPassantFile = enPassantFile;
     move.oldCastlingRights = castlingRights;
     // en passant hashing
@@ -357,6 +357,7 @@ bool Board::isThreefoldRepetition() const
 
 void Board::undoMove(LegalMove &move)
 {
+    movesDone--;
     // update info for threefold repition
     uint64_t hash = positionHistory.back();
     positionHistory.pop_back();
@@ -740,4 +741,9 @@ std::vector<std::tuple<int, int>> Board::getBlackMoves()
 std::vector<std::tuple<int, int>> Board::getWhiteMoves()
 {
     return whitePositions;
+}
+
+int Board::getMoveCount() const
+{
+    return movesDone;
 }

@@ -28,6 +28,7 @@ struct LegalMove
     int oldEnPassantFile = -1;
 
     double value;
+    int valueDepth = 0;
 
     double priorityOfSearchValue = 0;
 
