@@ -10,19 +10,21 @@ namespace weights
 
     constexpr int MAX_QUIESCE_DEPTH = 6;
 
-    constexpr double PASSED_PAWN = .4;
-    constexpr double CHAIN_VALUE = .1;
+    constexpr double PASSED_PAWN = .4;       // for distance from end
+    constexpr double PASSED_PAWN_VALUE = .3; // is a passed pawn
+    constexpr double ISOLATED_PAWN = .15;
+    constexpr double CHAIN_VALUE = .15;
     constexpr double DOUBLED_PAWN = .4;
     constexpr double PAWN_INFRONT_OF_KING = .2;
     constexpr double CENTER_PAWN_VALUE = .5;
-    constexpr double DISTANCE_FROM_PROMOTION_VALUE = .05;
+    constexpr double DISTANCE_FROM_PROMOTION_VALUE = .08;
 
     inline constexpr std::array<std::array<double, 8>, 8> knightValues = {{{0.0, .1, .1, .1, .1, .1, .1, 0.0},
                                                                            {.05, .15, .2, .2, .2, .2, .15, .05},
-                                                                           {.1, .2, .3, .35, .35, .3, .2, .1},
+                                                                           {.1, .2, .35, .35, .35, .35, .2, .1},
                                                                            {.15, .2, .35, .4, .4, .35, .2, .15},
                                                                            {.15, .2, .35, .4, .4, .35, .2, .15},
-                                                                           {.1, .2, .3, .35, .35, .3, .2, .1},
+                                                                           {.1, .2, .35, .35, .35, .35, .2, .1},
                                                                            {.05, .15, .2, .2, .2, .2, .15, .05},
                                                                            {0.0, .1, .1, .1, .1, .1, .1, 0.0}}};
 

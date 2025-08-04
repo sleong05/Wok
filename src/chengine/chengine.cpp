@@ -6,6 +6,7 @@
 #include "moveGetter.hpp"
 #include "chengine/minMaxTree.hpp"
 #include "chengine/chengine.hpp"
+#include "chengine/pawnStructureEvaluator.hpp"
 
 using namespace constants;
 

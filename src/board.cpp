@@ -12,6 +12,7 @@ using namespace constants;
 Board::Board() : lastMove(constants::NO_TILE_SELECTED, constants::NO_TILE_SELECTED, constants::EMPTY, constants::EMPTY)
 {
     initilizeBoard();
+    pawnEvaluator = PawnStructureEvaluator();
 }
 
 void Board::initilizeBoard()
@@ -158,7 +159,8 @@ Board::Board(const Board &other)
       whitePositions(other.whitePositions),
       squares(other.squares),
       repetitionCount(other.repetitionCount),
-      positionHistory(other.positionHistory)
+      positionHistory(other.positionHistory),
+      pawnEvaluator(other.pawnEvaluator)
 {
     for (int x = 0; x < 8; ++x)
         for (int y = 0; y < 8; ++y)
@@ -168,6 +170,8 @@ Board::Board(const Board &other)
 
 void Board::doMove(LegalMove &move, sf::RenderWindow *window, bool fromUser)
 {
+    pawnEvaluator.updatePawnStructure(move);
+
     movesDone++;
     move.oldEnPassantFile = enPassantFile;
     move.oldCastlingRights = castlingRights;
@@ -357,6 +361,7 @@ bool Board::isThreefoldRepetition() const
 
 void Board::undoMove(LegalMove &move)
 {
+    pawnEvaluator.updatePawnStructure(move, true);
     movesDone--;
     // update info for threefold repition
     uint64_t hash = positionHistory.back();
@@ -746,4 +751,9 @@ std::vector<std::tuple<int, int>> Board::getWhiteMoves()
 int Board::getMoveCount() const
 {
     return movesDone;
+}
+
+PawnStructureEvaluator Board::getPawnStructureEvaluator() const &
+{
+    return pawnEvaluator;
 }

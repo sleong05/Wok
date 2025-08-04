@@ -5,6 +5,7 @@
 #include <array>
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
+#include "chengine/pawnStructureEvaluator.hpp"
 class MoveGetter;
 class SBAnalyzer;
 
@@ -38,6 +39,7 @@ public:
     std::vector<std::tuple<int, int>> getBlackMoves();
     std::vector<std::tuple<int, int>> getWhiteMoves();
     int getMoveCount() const;
+    PawnStructureEvaluator getPawnStructureEvaluator() const &;
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
     const uint64_t &getHash();
@@ -48,6 +50,7 @@ public:
     Board(const Board &other);
 
 private:
+    PawnStructureEvaluator pawnEvaluator;
     int movesDone = 0;
     void removeCastlingRight(CastlingRight right);
     uint64_t zobristSideToMove;

@@ -12,7 +12,6 @@ double SBAnalyzer::evaluateBoard(const Board &board)
 
     double boardValue = 0;
     const auto boardState = board.getSquares();
-    const auto moveState = board.hasMovedArray;
 
     for (const auto &position : board.blackPositions)
     {
@@ -26,6 +25,9 @@ double SBAnalyzer::evaluateBoard(const Board &board)
         auto [col, row] = position;
         boardValue += getPieceValue(boardState[row][col], col, row, board);
     }
+
+    boardValue += board.getPawnStructureEvaluator().evaluatePawnStructure();
+
     return boardValue;
 }
 
@@ -36,7 +38,7 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board
     int movesDone = board.getMoveCount();
     if (piece == constants::EMPTY)
     {
-        std::cerr << "Invalid piece ID: " << piece << std::endl;
+        std::cerr << "tryed to get the value of nothing" << piece << std::endl;
         return 0; // or some safe default
     }
     double hasNotMoved = (moveState[row][col] == false) ? 1.0 / 3.0 : 0.0;
@@ -45,8 +47,7 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board
     case WHITE_PAWN:
     case BLACK_PAWN:
     {
-        double notMovedValue = (col != 5) ? 0 : -.5;                                      // kings pawn shouldnt move
-        return 1.0 + TheoryEvaluator::getPawnValue(col, row, boardState) - notMovedValue; // moveState is 0 or 1. hasMoved = true =1
+        return 1.0 + TheoryEvaluator::getPawnValue(col, row, boardState); // moveState is 0 or 1. hasMoved = true =1
     }
 
     case WHITE_KNIGHT:
@@ -55,7 +56,7 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board
 
     case WHITE_BISHOP:
     case BLACK_BISHOP:
-        return 3.1 + TheoryEvaluator::getBishopValue(col, row, boardState) - hasNotMoved;
+        return 3.3 + TheoryEvaluator::getBishopValue(col, row, boardState) - hasNotMoved;
 
     case WHITE_ROOK:
     case BLACK_ROOK:

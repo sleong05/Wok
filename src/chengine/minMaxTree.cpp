@@ -215,11 +215,15 @@ LegalMove MinMaxTree::lookIntoFutureMoves(Board &board, int color, int depth, do
         // check for three fold repition
         if (board.isThreefoldRepetition())
         {
+            std::cout << "Threefold detected \n";
             LegalMove dummyMove;
             dummyMove.value = 0;
-            continue;
         }
-        move.value = lookIntoFutureMoves(board, color * -1, depth + 1, alpha, beta, maxTimeMs, kill, maxDepth).value;
+        else
+        {
+            move.value = lookIntoFutureMoves(board, color * -1, depth + 1, alpha, beta, maxTimeMs, kill, maxDepth).value;
+        }
+
         board.undoMove(move);
         uint64_t hashAfter = board.getHash();
         if (hashBefore != hashAfter)

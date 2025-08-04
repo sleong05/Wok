@@ -61,12 +61,12 @@ double TheoryEvaluator::getKnightValue(int col, int row)
 
 double TheoryEvaluator::getRookValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return rookValues[row][col] + Rook::getNumberOfMoves(col, row, boardState) / 30.0;
+    return rookValues[row][col] + Rook::getNumberOfMoves(col, row, boardState) / 24.0;
 }
 
 double TheoryEvaluator::getQueenValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return (Rook::getNumberOfMoves(col, row, boardState) + Bishop::getNumberOfMoves(col, row, boardState)) / 46.0;
+    return (Rook::getNumberOfMoves(col, row, boardState) + Bishop::getNumberOfMoves(col, row, boardState)) / 42.0;
 }
 
 double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState, const std::array<std::array<bool, 8u>, 8u> &moveState, int movesDone)
@@ -105,5 +105,5 @@ double TheoryEvaluator::getKingValue(int col, int row, const std::array<std::arr
 
 double TheoryEvaluator::getBishopValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return Bishop::getNumberOfMoves(col, row, boardState) / 23.0;
+    return Bishop::getNumberOfMoves(col, row, boardState) / 22.0;
 }
