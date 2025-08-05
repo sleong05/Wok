@@ -80,7 +80,7 @@ LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &ki
 
         for (auto &move : threadResults)
         {
-
+            std::cout << move << "\n";
             bool isBetter = (color == WHITE) ? move.value > bestEval : move.value < bestEval;
             if (isBetter)
             {

@@ -14,14 +14,16 @@ double TheoryEvaluator::getPawnValue(int col, int row, const std::array<std::arr
     int distanceFromPromotion = (color == constants::WHITE) ? 7 - row : row;
     double value = 0;
     // check left chain
+    if (col != 0 and boardState[row + color][col - 1] == myPawn)
+        value += CHAIN_VALUE;
+
+    if (col != 7 and boardState[row + color][col + 1] == myPawn)
+        value += CHAIN_VALUE;
+
     if ((col == 2 or col == 3 or col == 4) and (row == 3 or row == 4))
     {
         value += CENTER_PAWN_VALUE;
     }
-
-    // doubled pawns
-    if (boardState[row + color][col] == myPawn or (distanceFromPromotion > 1 and boardState[row + color * 2][col]))
-        value -= DOUBLED_PAWN;
 
     // encourage pushing of pawns
     value += DISTANCE_FROM_PROMOTION_VALUE * distanceFromPromotion;
@@ -61,7 +63,7 @@ double TheoryEvaluator::getKnightValue(int col, int row)
 
 double TheoryEvaluator::getRookValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return rookValues[row][col] + Rook::getNumberOfMoves(col, row, boardState) / 24.0;
+    return rookValues[row][col] + Rook::getNumberOfMoves(col, row, boardState) / 25.0;
 }
 
 double TheoryEvaluator::getQueenValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)

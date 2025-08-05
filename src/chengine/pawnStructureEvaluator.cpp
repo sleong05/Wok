@@ -16,7 +16,7 @@ double PawnStructureEvaluator::evaluatePawnStructure()
             continue;
         // doubled pawns
         if (blackPawns[i] > 1)
-            pawnScore += blackPawns[i] / 4.0; // double pawn = -.5, triple = -.75
+            pawnScore += DOUBLED_PAWN; // double pawn = -.5, triple = -.75
 
         // isolated
         if ((i == 0 or blackPawns[i - 1] == 0) and (i == 7 or blackPawns[i + 1] == 0))

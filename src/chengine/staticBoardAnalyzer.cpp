@@ -47,12 +47,13 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board
     case WHITE_PAWN:
     case BLACK_PAWN:
     {
-        return 1.0 + TheoryEvaluator::getPawnValue(col, row, boardState); // moveState is 0 or 1. hasMoved = true =1
+        double notMovedValue = (col == 4 or col == 3) ? .7 : 0;                           // kings pawn shouldnt move
+        return 1.0 + TheoryEvaluator::getPawnValue(col, row, boardState) - notMovedValue; // moveState is 0 or 1. hasMoved = true =1
     }
 
     case WHITE_KNIGHT:
     case BLACK_KNIGHT:
-        return 3.0 + TheoryEvaluator::getKnightValue(col, row) - hasNotMoved;
+        return 3.0 + TheoryEvaluator::getKnightValue(col, row) - hasNotMoved * 2;
 
     case WHITE_BISHOP:
     case BLACK_BISHOP:
