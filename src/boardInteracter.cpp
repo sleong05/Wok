@@ -41,7 +41,6 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
             // chengine.stopPondering();
             sf::RenderWindow *windowPtr = &window;
             board.doMove(it->second, windowPtr, true);
-            board.getPawnStructureEvaluator().printPawnStructure();
             std::cout << "-----------------------------\n";
             if (board.isThreefoldRepetition())
             {
@@ -67,7 +66,6 @@ void BoardInteractor::click(int col, int row, Board &board, sf::RenderWindow &wi
                 return;
             }
             board.doMove(chengineMove);
-            board.getPawnStructureEvaluator().printPawnStructure();
             if (board.isThreefoldRepetition())
             {
                 std::cout << "Draw by threefold repitition";

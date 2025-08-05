@@ -63,7 +63,7 @@ double TheoryEvaluator::getKnightValue(int col, int row)
 
 double TheoryEvaluator::getRookValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
 {
-    return rookValues[row][col] + Rook::getNumberOfMoves(col, row, boardState) / 25.0;
+    return rookValues[row][col] + Rook::getNumberOfMoves(col, row, boardState) / 22.0;
 }
 
 double TheoryEvaluator::getQueenValue(int col, int row, const std::array<std::array<int, 8u>, 8u> &boardState)
