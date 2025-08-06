@@ -20,7 +20,7 @@ double TheoryEvaluator::getPawnValue(int col, int row, const std::array<std::arr
     if (col != 7 and boardState[row + color][col + 1] == myPawn)
         value += CHAIN_VALUE;
 
-    if ((col == 2 or col == 3 or col == 4) and (row == 3 or row == 4))
+    if ((col == 2 or col == 3 or col == 4) and (row >= 2 and row <= 5))
     {
         value += CENTER_PAWN_VALUE;
     }

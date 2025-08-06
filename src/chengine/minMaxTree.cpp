@@ -214,7 +214,6 @@ LegalMove MinMaxTree::lookIntoFutureMoves(Board &board, int color, int depth, do
         // check for three fold repition
         if (board.isThreefoldRepetition())
         {
-            std::cout << "Threefold detected \n";
             LegalMove dummyMove;
             dummyMove.value = 0;
         }
