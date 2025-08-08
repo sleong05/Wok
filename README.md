@@ -15,13 +15,15 @@ Play against the engine in your browser: [Live Demo](https://yourdomain.com)
 - Built with C++ and [SFML](https://www.sfml-dev.org/) for graphics and input.
 - Offers a fully featured offline GUI.
 - Fastest performance and ideal for testing engine strength.
+- Estimated Rating: 2100
 
 ### 🌍 Browser Version (WASM)
 - Compiled with [Emscripten](https://emscripten.org/) to WebAssembly.
 - Integrated with [chessboard.js](https://github.com/oakmac/chessboardjs) for UI and [chess.js](https://github.com/jhlywa/chess.js) for move legality and game state.
 - Lightweight UI with animated moves, highlights, and end-game detection.
 - Fallback support: if the engine crashes, a random move is made instead.
-
+- Estimated Rating: 1500
+  
 ---
 
 ## 🚀 Features
