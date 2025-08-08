@@ -47,3 +47,12 @@ int Chengine::stopPondering()
 Chengine::Chengine(Board &board) : miniMax(), board(board)
 {
 }
+
+void Chengine::loadFEN(const std::string &fen)
+{
+}
+
+std::string Chengine::findBestMove()
+{
+    return std::string();
+}

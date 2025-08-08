@@ -8,8 +8,6 @@ namespace Identifier
 {
     inline int getTeam(int piece)
     {
-        if (piece == 0)
-            throw std::runtime_error("Empty passed into getTeam");
         return (piece < 13) ? constants::WHITE : constants::BLACK;
     }
 

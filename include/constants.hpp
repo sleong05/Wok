@@ -1,7 +1,6 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#include <SFML/Graphics.hpp>
 #include <tuple>
 #include <array>
 
@@ -10,8 +9,6 @@ namespace constants
     constexpr float TILE_SIZE = 100.f;
     constexpr float WINDOW_HEIGHT = 800.f;
     constexpr float WINDOW_WIDTH = 800.f;
-    inline const sf::Color creamTileColor(238, 238, 210);
-    inline const sf::Color greenTileColor(118, 150, 86);
 
     constexpr int QUEEN_ATTACK_QUE = 900;
 

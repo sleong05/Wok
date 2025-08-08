@@ -33,6 +33,6 @@ private:
 
     std::shared_mutex ttMutex;
     bool timeUp = false;
-    std::chrono::_V2::system_clock::time_point start;
+    std::chrono::high_resolution_clock::time_point start;
     std::unordered_map<uint64_t, TTEntry> transpositionTable;
 };

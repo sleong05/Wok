@@ -16,7 +16,9 @@
 #include <random>
 #include <thread>
 #include <shared_mutex>
-#include <bits/stdc++.h>
+#include <atomic>
+#include <mutex>
+#include <emscripten/emscripten.h>
 using namespace constants;
 using namespace std::chrono;
 
@@ -25,14 +27,16 @@ MinMaxTree::MinMaxTree()
 {
 }
 
-LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &kill, std::chrono::duration<double> maxTimeMs, int startDepth) // chengine is black so make them alkways look for the lowest value move
+LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &kill, std::chrono::duration<double> maxTimeMs, int startDepth)
 {
     start = high_resolution_clock::now();
 
     unsigned int totalThreads = std::thread::hardware_concurrency();
     int maxThreads = (totalThreads > 1) ? totalThreads - 2 : 1;
+    maxThreads = std::min(maxThreads, 8);
     // get moves
-    std::vector<LegalMove> legalMoves = MoveGetter::getMovesForTeam(color, board);
+    std::vector<LegalMove>
+        legalMoves = MoveGetter::getMovesForTeam(color, board);
     if (legalMoves.size() == 0)
     {
         LegalMove gameOver = LegalMove();
@@ -40,9 +44,9 @@ LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &ki
         gameOver.from = constants::NO_TILE_SELECTED;
         return gameOver;
     }
+
     // split the moves into buckets based on thread count
     int threadCount = std::min((int)legalMoves.size(), maxThreads);
-
     std::vector<std::vector<LegalMove>> buckets(threadCount);
     for (int i = 0; i < int(legalMoves.size()); ++i)
         buckets[i % threadCount].push_back(legalMoves[i]);
@@ -51,6 +55,7 @@ LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &ki
     timeUp = false;
     int maxDepth = startDepth;
     // iterative deepening
+    emscripten_log(EM_LOG_CONSOLE, "Starting iterative deepening with %d threads", threadCount);
     while (!timeUp or !kill.load())
     {
         auto now = high_resolution_clock::now();
@@ -73,6 +78,7 @@ LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &ki
         {
             t.join();
         }
+
         // choose best move
         LegalMove bestMoveAtDepth;
         double bestEval = (color == WHITE) ? -INF : INF;
@@ -93,10 +99,13 @@ LegalMove MinMaxTree::getBestMove(Board &board, int color, std::atomic<bool> &ki
         if (timeUp or kill.load())
             break;
         bestMove = bestMoveAtDepth;
-        std::cout << "at " << maxDepth + 1 << " best move is " << bestMove << std::endl;
         maxDepth++;
     }
     bestMove.valueDepth = maxDepth;
+
+    std::cout << "Depth " << bestMove.valueDepth
+              << bestMove
+              << std::endl;
     return bestMove;
 };
 
@@ -155,6 +164,7 @@ LegalMove MinMaxTree::lookIntoFutureMoves(Board &board, int color, int depth, do
     // base case depth hit
     if (depth == maxDepth)
     {
+
         return quiesceSearch(board, color, alpha, beta, depth);
     }
     // -----------------------------------------RECURSIVE CASES--------------------------------------------------
@@ -227,7 +237,6 @@ LegalMove MinMaxTree::lookIntoFutureMoves(Board &board, int color, int depth, do
         if (hashBefore != hashAfter)
         {
             zobristMismatch = true;
-            std::cerr << "Zobrist hash mismatch after undo!\n";
         }
         //  update bestMove
         if (color == WHITE)

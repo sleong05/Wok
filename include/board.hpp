@@ -3,7 +3,6 @@
 
 #include "legalMove.hpp"
 #include <array>
-#include <SFML/Graphics.hpp>
 #include <unordered_map>
 #include "chengine/pawnStructureEvaluator.hpp"
 class MoveGetter;
@@ -23,7 +22,7 @@ class Board
     friend class SBAnalyzer;
 
 public:
-    void doMove(LegalMove &move, sf::RenderWindow *window = nullptr, bool fromUser = false);
+    void doMove(LegalMove &move);
     bool isKingInCheck(int color);
     void castle(LegalMove &move);
     void handlePromotion(LegalMove &move);
@@ -35,11 +34,11 @@ public:
     bool testMoveCheckLegality(LegalMove &move);
     void verifyTrackerConsistency() const;
     void printPositionTrackerAsBoard() const;
-    int showPromotionMenu(sf::RenderWindow *window, int color);
     std::vector<std::tuple<int, int>> getBlackMoves();
     std::vector<std::tuple<int, int>> getWhiteMoves();
     int getMoveCount() const;
     PawnStructureEvaluator getPawnStructureEvaluator() const &;
+    void print() const;
     Board();
     const std::array<std::array<int, 8>, 8> &getSquares() const;
     const uint64_t &getHash();

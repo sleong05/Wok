@@ -38,7 +38,6 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board
     int movesDone = board.getMoveCount();
     if (piece == constants::EMPTY)
     {
-        std::cerr << "tryed to get the value of nothing" << piece << std::endl;
         return 0; // or some safe default
     }
     double hasNotMoved = (moveState[row][col] == false) ? 1.0 / 3.0 : 0.0;
@@ -72,8 +71,6 @@ double SBAnalyzer::getPieceValue(int piece, int col, int row, const Board &board
         return 0.0 + TheoryEvaluator::getKingValue(col, row, boardState, moveState, movesDone) - hasNotMoved;
 
     default:
-        std::cerr << "Invalid piece ID: " << piece << '\n';
-        throw std::runtime_error("tried to evalaute not a piece");
         return 0;
     }
 }
