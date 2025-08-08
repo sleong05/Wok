@@ -42,6 +42,13 @@ Play against the engine in your browser: [Live Demo](https://yourdomain.com)
 - C++17 or later
 - [SFML 2.5+](https://www.sfml-dev.org/)
 
+### Browser Version (WASM)
+-Emscripten
+
 ```bash
 make
 ./wok
+```
+
+📁 Example WebAssembly Integration (chessboard.js + chess.js)
+https://github.com/sleong05/wokBrowser
